@@ -8,15 +8,47 @@ import VolunteerModal from '@/components/VolunteerModal';
 import CreatePostModal from '@/components/CreatePostModal';
 import AIMatcherModal from '@/components/AIMatcherModal';
 import NGOProfileModal from '@/components/NGOProfileModal';
-import { NGO, Post, Fundraiser, VolunteerNeed } from '@/types';
+import ImpactStoriesBar, { StoryItem, STORIES_DATA } from '@/components/ImpactStoriesBar';
+import StoryModal from '@/components/StoryModal';
+import ImpactChainModal from '@/components/ImpactChainModal';
+import DonorDashboardModal from '@/components/DonorDashboardModal';
+import NeedHelpModal from '@/components/NeedHelpModal';
+import SOSModal from '@/components/SOSModal';
+import VoiceAssistantModal from '@/components/VoiceAssistantModal';
+import ImpactMap from '@/components/ImpactMap';
+import { NGO, Post, Fundraiser, VolunteerNeed, Donation } from '@/types';
 import { DataService } from '@/lib/dataService';
 import { 
   Heart, ShieldCheck, Users, Landmark, Search, Filter, 
-  Sparkles, PlusCircle, ArrowRight, Award, TrendingUp, CheckCircle2 
+  Sparkles, PlusCircle, ArrowRight, Award, TrendingUp, CheckCircle2,
+  Layers, Mic, AlertTriangle, HelpCircle, MapPin
 } from 'lucide-react';
 
+const SAMPLE_PASSPORT_DONATIONS: Donation[] = [
+  {
+    id: 'don-demo-1',
+    fundraiser_id: 'fund-1',
+    donor_name: 'You (Citizen Supporter)',
+    donor_email: 'you@openimpact.in',
+    amount: 1500,
+    is_anonymous: false,
+    receipt_id: 'REC-2026-80G-8472',
+    created_at: '2026-09-29T14:30:00Z',
+  },
+  {
+    id: 'don-demo-2',
+    fundraiser_id: 'fund-2',
+    donor_name: 'You (Citizen Supporter)',
+    donor_email: 'you@openimpact.in',
+    amount: 2400,
+    is_anonymous: false,
+    receipt_id: 'REC-2026-80G-9102',
+    created_at: '2026-09-18T10:15:00Z',
+  }
+];
+
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'feed' | 'ngos' | 'fundraisers' | 'volunteer'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'ngos' | 'fundraisers' | 'volunteer' | 'map'>('feed');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -25,9 +57,10 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [fundraisers, setFundraisers] = useState<Fundraiser[]>([]);
   const [volunteerNeeds, setVolunteerNeeds] = useState<VolunteerNeed[]>([]);
+  const [donations, setDonations] = useState<Donation[]>(SAMPLE_PASSPORT_DONATIONS);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Modal states
+  // Standard Modal states
   const [isDonateOpen, setIsDonateOpen] = useState(false);
   const [activeFundraiser, setActiveFundraiser] = useState<Fundraiser | null>(null);
   const [activeDonationNGO, setActiveDonationNGO] = useState<NGO | null>(null);
@@ -40,6 +73,19 @@ export default function Home() {
 
   const [isNGOProfileOpen, setIsNGOProfileOpen] = useState(false);
   const [selectedNGO, setSelectedNGO] = useState<NGO | null>(null);
+
+  // Advanced Feature Modals
+  const [isStoryModalOpen, setIsStoryModalOpen] = useState(false);
+  const [activeStoryIndex, setActiveStoryIndex] = useState(0);
+
+  const [isImpactChainOpen, setIsImpactChainOpen] = useState(false);
+  const [chainTargetPost, setChainTargetPost] = useState<Post | null>(null);
+  const [chainTargetFundraiser, setChainTargetFundraiser] = useState<Fundraiser | null>(null);
+
+  const [isDonorDashboardOpen, setIsDonorDashboardOpen] = useState(false);
+  const [isNeedHelpOpen, setIsNeedHelpOpen] = useState(false);
+  const [isSOSOpen, setIsSOSOpen] = useState(false);
+  const [isVoiceAssistantOpen, setIsVoiceAssistantOpen] = useState(false);
 
   // Load initial data
   const loadAllData = async () => {
@@ -143,25 +189,48 @@ export default function Home() {
     }
   };
 
+  const handleOpenStory = (index: number) => {
+    setActiveStoryIndex(index);
+    setIsStoryModalOpen(true);
+  };
+
+  const handleOpenImpactChainForPost = (post: Post) => {
+    setChainTargetPost(post);
+    const relatedFund = fundraisers.find((f) => f.ngo_id === post.ngo_id) || fundraisers[0];
+    setChainTargetFundraiser(relatedFund);
+    setIsImpactChainOpen(true);
+  };
+
+  const handleOpenGeneralImpactChain = () => {
+    setChainTargetPost(posts[0] || null);
+    setChainTargetFundraiser(fundraisers[0] || null);
+    setIsImpactChainOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col selection:bg-emerald-500 selection:text-white">
       
       {/* Navigation */}
       <Navbar
-        activeTab={activeTab}
+        activeTab={activeTab === 'map' ? 'feed' : activeTab}
         onTabChange={(tab) => setActiveTab(tab as any)}
         onOpenCreatePost={() => setIsCreatePostOpen(true)}
         onOpenAIMatcher={() => setIsAIMatcherOpen(true)}
+        onOpenImpactChain={handleOpenGeneralImpactChain}
+        onOpenDonorDashboard={() => setIsDonorDashboardOpen(true)}
+        onOpenNeedHelp={() => setIsNeedHelpOpen(true)}
+        onOpenVoiceAssistant={() => setIsVoiceAssistantOpen(true)}
+        onOpenSOS={() => setIsSOSOpen(true)}
       />
 
-      {/* Hero Banner with Live Metrics */}
+      {/* Hero Banner with Live Metrics & Impact Chain CTA */}
       <section className="bg-gradient-to-b from-emerald-950 via-slate-900 to-slate-900 text-white pt-10 pb-12 px-4 sm:px-6 lg:px-8 border-b border-emerald-900/30">
         <div className="max-w-7xl mx-auto">
           
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-4">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>100% Verified Impact & Real-Time Fund Audits</span>
+              <span>100% Traceable Impact • Zero Black-Box Donations</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight sm:leading-tight">
@@ -173,8 +242,38 @@ export default function Home() {
             </h1>
 
             <p className="mt-4 text-base sm:text-lg text-slate-300 leading-relaxed font-light">
-              Explore verified NGO activities, track live photographic proof of drives, review transparency scores, and contribute directly with automated 80G tax receipts.
+              Explore verified NGO activities, track live photographic proof of drives, review transparency scores, and trace every single rupee from invoice to field deployment.
             </p>
+
+            {/* Core USP Action Buttons */}
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={handleOpenGeneralImpactChain}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-md transition-all cursor-pointer"
+              >
+                <Layers className="w-4 h-4 text-slate-950" />
+                <span>Explore The Impact Chain USP</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsVoiceAssistantOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm backdrop-blur-xs transition-all border border-white/20 cursor-pointer"
+              >
+                <Mic className="w-4 h-4 text-amber-300 animate-pulse" />
+                <span>वॉयस साथी (Hindi / Marathi)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsDonorDashboardOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm backdrop-blur-xs transition-all border border-white/20 cursor-pointer"
+              >
+                <Award className="w-4 h-4 text-cyan-300" />
+                <span>My Impact Passport</span>
+              </button>
+            </div>
           </div>
 
           {/* Quick Metrics Ticker */}
@@ -183,7 +282,7 @@ export default function Home() {
               <span className="text-xs text-slate-400 font-medium block">Audited NGOs</span>
               <span className="text-2xl sm:text-3xl font-black text-white mt-1 block">4</span>
               <span className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> 100% Compliance
+                <CheckCircle2 className="w-3 h-3" /> Platform Reviewed
               </span>
             </div>
 
@@ -196,7 +295,7 @@ export default function Home() {
             </div>
 
             <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xs">
-              <span className="text-xs text-slate-400 font-medium block">Audited Lives Reached</span>
+              <span className="text-xs text-slate-400 font-medium block">Reported Lives Reached</span>
               <span className="text-2xl sm:text-3xl font-black text-cyan-400 mt-1 block">5,665+</span>
               <span className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
                 Meals, students & trees
@@ -216,10 +315,13 @@ export default function Home() {
       </section>
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
         
+        {/* Instagram/Threads-style Impact Stories Bar */}
+        <ImpactStoriesBar onSelectStory={handleOpenStory} />
+
         {/* Search & Category Filter Bar */}
-        <div className="mb-8 space-y-4">
+        <div className="space-y-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             
             {/* Search Input */}
@@ -230,18 +332,34 @@ export default function Home() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search causes, NGOs, cities (e.g. Mumbai, coding, food)..."
-                className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs"
+                className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs"
               />
             </div>
 
-            {/* AI Matcher Banner CTA for Judges */}
-            <button
-              onClick={() => setIsAIMatcherOpen(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm hover:shadow transition-all cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4 animate-spin" />
-              <span>Smart AI Cause Finder</span>
-            </button>
+            {/* Top Action Pills: AI Matcher & Regional Map */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab(activeTab === 'map' ? 'feed' : 'map')}
+                className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs sm:text-sm font-bold rounded-2xl border transition-all cursor-pointer ${
+                  activeTab === 'map'
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                }`}
+              >
+                <MapPin className="w-4 h-4 text-emerald-500" />
+                <span>{activeTab === 'map' ? 'Hide Map' : 'National Impact Map'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsAIMatcherOpen(true)}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs sm:text-sm font-bold rounded-2xl shadow-sm hover:shadow transition-all cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 animate-spin" />
+                <span>Smart AI Cause Finder</span>
+              </button>
+            </div>
           </div>
 
           {/* Category Pills */}
@@ -249,6 +367,7 @@ export default function Home() {
             {categories.map((cat) => (
               <button
                 key={cat}
+                type="button"
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                   selectedCategory === cat
@@ -262,6 +381,18 @@ export default function Home() {
           </div>
         </div>
 
+        {/* VIEW: NATIONAL IMPACT MAP (If Map is activated) */}
+        {activeTab === 'map' && (
+          <div className="py-2">
+            <ImpactMap 
+              onSelectRegion={(reg) => {
+                setSelectedCategory('All');
+              }}
+              onExploreCampaigns={() => setActiveTab('feed')}
+            />
+          </div>
+        )}
+
         {/* TAB 1: IMPACT FEED */}
         {activeTab === 'feed' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -271,7 +402,7 @@ export default function Home() {
               <div className="flex items-center justify-between pb-2 border-b border-slate-200">
                 <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <Heart className="w-5 h-5 text-emerald-600" />
-                  Latest Verified Community Feed
+                  Live Audited Community Feed
                 </h2>
                 <span className="text-xs text-slate-500 font-medium">
                   {filteredPosts.length} activities logged
@@ -279,7 +410,7 @@ export default function Home() {
               </div>
 
               {filteredPosts.length === 0 ? (
-                <div className="bg-white rounded-2xl p-10 text-center border border-slate-200">
+                <div className="bg-white rounded-3xl p-10 text-center border border-slate-200">
                   <p className="text-slate-500 text-sm">No activity posts match your search.</p>
                 </div>
               ) : (
@@ -290,6 +421,7 @@ export default function Home() {
                     onLike={(id) => DataService.likePost(id)}
                     onDonate={(ngoId) => handleOpenDonateForNGO(ngoId)}
                     onSelectNGO={(slug) => handleOpenNGOProfile(slug)}
+                    onViewImpactChain={(p) => handleOpenImpactChainForPost(p)}
                   />
                 ))
               )}
@@ -298,14 +430,35 @@ export default function Home() {
             {/* Right Desktop Sidebar */}
             <div className="hidden lg:block lg:col-span-4 space-y-6">
               
+              {/* Impact Chain Quick Banner */}
+              <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-3xl p-5 shadow-sm space-y-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
+                  <Layers className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-base">The Impact Chain</h4>
+                  <p className="text-xs text-amber-100 mt-1 leading-relaxed">
+                    Trace how ₹500 travels: from donation receipt to itemized purchase invoices, GPS coordinates, and ground beneficiary headcounts.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleOpenGeneralImpactChain}
+                  className="w-full py-2 px-3 bg-white text-orange-950 font-bold rounded-xl text-xs hover:bg-orange-50 transition-colors shadow-2xs"
+                >
+                  Inspect Interactive Audit Trail →
+                </button>
+              </div>
+
               {/* Urgent Fundraisers Widget */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+              <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                     <Landmark className="w-4 h-4 text-emerald-600" />
                     Urgent Fundraisers
                   </h3>
                   <button
+                    type="button"
                     onClick={() => setActiveTab('fundraisers')}
                     className="text-xs font-semibold text-emerald-600 hover:underline"
                   >
@@ -328,6 +481,7 @@ export default function Home() {
                         <div className="flex items-center justify-between text-[11px] text-slate-600">
                           <span>₹{Number(f.raised_amount).toLocaleString('en-IN')} raised</span>
                           <button
+                            type="button"
                             onClick={() => handleOpenDonateForFundraiser(f)}
                             className="font-bold text-emerald-600 hover:text-emerald-700"
                           >
@@ -341,13 +495,14 @@ export default function Home() {
               </div>
 
               {/* Open Volunteer Drives Widget */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+              <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                     <Users className="w-4 h-4 text-blue-600" />
                     Urgent Volunteer Needs
                   </h3>
                   <button
+                    type="button"
                     onClick={() => setActiveTab('volunteer')}
                     className="text-xs font-semibold text-blue-600 hover:underline"
                   >
@@ -357,12 +512,13 @@ export default function Home() {
 
                 <div className="space-y-3">
                   {volunteerNeeds.slice(0, 2).map((v) => (
-                    <div key={v.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+                    <div key={v.id} className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
                       <h4 className="text-xs font-bold text-slate-900 line-clamp-1">{v.title}</h4>
                       <p className="text-[11px] text-slate-500 mt-0.5">{v.event_date}</p>
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200/60 text-[11px]">
                         <span className="text-blue-700 font-semibold">{v.total_slots - v.filled_slots} spots left</span>
                         <button
+                          type="button"
                           onClick={() => handleOpenVolunteer(v)}
                           className="font-bold text-blue-600 hover:text-blue-700"
                         >
@@ -374,15 +530,32 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 80G Transparency Guarantee Card */}
-              <div className="bg-gradient-to-br from-emerald-500 to-teal-700 text-white rounded-2xl p-5 shadow-sm">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">
-                  <ShieldCheck className="w-6 h-6" />
+              {/* Two-Way Help & Emergency Assistance Card */}
+              <div className="bg-slate-900 text-white rounded-3xl p-5 shadow-sm space-y-3">
+                <div className="flex items-center gap-2 text-rose-400 font-bold text-xs uppercase tracking-wider">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>Two-Way Community Aid</span>
                 </div>
-                <h4 className="font-bold text-base">OpenCause Audited Guarantee</h4>
-                <p className="text-xs text-emerald-100 mt-1 leading-relaxed">
-                  Every contribution is mapped directly to real receipts. Donors receive instant Sec 80G tax deduction receipts with QR verification.
+                <h4 className="font-bold text-sm">Need immediate relief?</h4>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Request food, medical supply kits or volunteer support directly from verified local NGOs.
                 </p>
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsNeedHelpOpen(true)}
+                    className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors"
+                  >
+                    I Need Help
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsSOSOpen(true)}
+                    className="px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors"
+                  >
+                    SOS Triage
+                  </button>
+                </div>
               </div>
 
             </div>
@@ -397,7 +570,7 @@ export default function Home() {
               <div>
                 <h2 className="text-xl font-bold text-slate-900">Verified NGO Directory</h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Browse audited non-profit organizations with verifiable track records
+                  Browse non-profit organizations with reviewed track records and transparent ledgers
                 </p>
               </div>
               <span className="text-xs font-semibold text-slate-600">
@@ -409,7 +582,7 @@ export default function Home() {
               {filteredNGOs.map((ngo) => (
                 <div
                   key={ngo.id}
-                  className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col"
+                  className="bg-white rounded-3xl border border-slate-200 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col"
                 >
                   <div className="relative h-32 w-full bg-slate-900">
                     <img
@@ -417,7 +590,7 @@ export default function Home() {
                       alt={ngo.name}
                       className="w-full h-full object-cover opacity-80"
                     />
-                    <div className="absolute -bottom-5 left-4 w-14 h-14 rounded-xl border-2 border-white bg-white overflow-hidden shadow-sm">
+                    <div className="absolute -bottom-5 left-4 w-14 h-14 rounded-2xl border-2 border-white bg-white overflow-hidden shadow-sm">
                       <img src={ngo.logo_url} alt={ngo.name} className="w-full h-full object-cover" />
                     </div>
                   </div>
@@ -439,8 +612,9 @@ export default function Home() {
                         Score: <strong className="text-emerald-700">{ngo.transparency_score}</strong>/100
                       </span>
                       <button
+                        type="button"
                         onClick={() => handleOpenNGOProfile(ngo.id)}
-                        className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                        className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                       >
                         View Audit & Work
                       </button>
@@ -459,7 +633,7 @@ export default function Home() {
               <div>
                 <h2 className="text-xl font-bold text-slate-900">Active Cause Fundraisers</h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Direct, unit-level transparent giving with verifiable impact metrics
+                  Direct, unit-level transparent giving with itemized cost breakdowns
                 </p>
               </div>
               <span className="text-xs font-semibold text-slate-600">
@@ -473,7 +647,7 @@ export default function Home() {
                 return (
                   <div
                     key={f.id}
-                    className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col"
+                    className="bg-white rounded-3xl border border-slate-200 shadow-xs hover:shadow-md transition-all overflow-hidden flex flex-col"
                   >
                     <div className="relative h-44 w-full bg-slate-100">
                       <img src={f.image_url} alt={f.title} className="w-full h-full object-cover" />
@@ -488,7 +662,7 @@ export default function Home() {
                         <p className="text-xs text-slate-600 mt-1.5 line-clamp-2 leading-relaxed">
                           {f.description}
                         </p>
-                        <div className="mt-3 bg-emerald-50 border border-emerald-200/60 rounded-lg p-2 text-xs text-emerald-800 font-medium">
+                        <div className="mt-3 bg-emerald-50 border border-emerald-200/60 rounded-xl p-2.5 text-xs text-emerald-800 font-medium">
                           ⚡ {f.unit_cost_description}
                         </div>
                       </div>
@@ -502,12 +676,26 @@ export default function Home() {
                           <span className="font-bold text-emerald-700">{percent}%</span>
                         </div>
 
-                        <button
-                          onClick={() => handleOpenDonateForFundraiser(f)}
-                          className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer shadow-xs"
-                        >
-                          Donate & Get 80G Receipt
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDonateForFundraiser(f)}
+                            className="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer shadow-xs text-center"
+                          >
+                            Donate & 80G Receipt
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setChainTargetFundraiser(f);
+                              setIsImpactChainOpen(true);
+                            }}
+                            className="p-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-xl text-xs font-bold transition-colors"
+                            title="Trace fund utilization"
+                          >
+                            <Layers className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -536,7 +724,7 @@ export default function Home() {
               {filteredVolunteerNeeds.map((need) => (
                 <div
                   key={need.id}
-                  className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition-all p-5 flex flex-col justify-between"
+                  className="bg-white rounded-3xl border border-slate-200 shadow-xs hover:shadow-md transition-all p-5 flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -558,7 +746,7 @@ export default function Home() {
 
                     <div className="flex flex-wrap gap-1 pt-2">
                       {need.skills_required.map((skill) => (
-                        <span key={skill} className="text-[11px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-medium">
+                        <span key={skill} className="text-[11px] bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-lg font-medium">
                           {skill}
                         </span>
                       ))}
@@ -567,6 +755,7 @@ export default function Home() {
 
                   <div className="pt-5">
                     <button
+                      type="button"
                       onClick={() => handleOpenVolunteer(need)}
                       className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer shadow-xs"
                     >
@@ -594,9 +783,9 @@ export default function Home() {
             <span>•</span>
             <span>Tailwind CSS</span>
             <span>•</span>
-            <span>Supabase Hybrid Layer</span>
+            <span>Impact Chain USP</span>
             <span>•</span>
-            <span>Gemini AI Matcher</span>
+            <span>Saathi Voice Assistant</span>
           </div>
         </div>
       </footer>
@@ -607,7 +796,12 @@ export default function Home() {
         onClose={() => setIsDonateOpen(false)}
         fundraiser={activeFundraiser}
         ngo={activeDonationNGO}
-        onDonationSuccess={loadAllData}
+        onDonationSuccess={(newDonation?: Donation) => {
+          loadAllData();
+          if (newDonation) {
+            setDonations(prev => [newDonation, ...prev]);
+          }
+        }}
       />
 
       <VolunteerModal
@@ -642,6 +836,70 @@ export default function Home() {
         posts={posts}
         onDonate={(f) => handleOpenDonateForFundraiser(f)}
         onVolunteer={(v) => handleOpenVolunteer(v)}
+      />
+
+      {/* Advanced Feature Modals */}
+      <StoryModal
+        isOpen={isStoryModalOpen}
+        initialIndex={activeStoryIndex}
+        onClose={() => setIsStoryModalOpen(false)}
+        onDonate={(fId) => {
+          setIsStoryModalOpen(false);
+          const f = fundraisers.find(fund => fund.id === fId) || fundraisers[0];
+          handleOpenDonateForFundraiser(f);
+        }}
+        onVolunteer={(vId) => {
+          setIsStoryModalOpen(false);
+          const v = volunteerNeeds.find(need => need.id === vId) || volunteerNeeds[0];
+          handleOpenVolunteer(v);
+        }}
+      />
+
+      <ImpactChainModal
+        isOpen={isImpactChainOpen}
+        onClose={() => setIsImpactChainOpen(false)}
+        post={chainTargetPost}
+        fundraiser={chainTargetFundraiser}
+        ngo={chainTargetFundraiser?.ngo || chainTargetPost?.ngo || null}
+        onDonate={(fundId) => {
+          setIsImpactChainOpen(false);
+          const f = fundraisers.find(fund => fund.id === fundId) || fundraisers[0];
+          handleOpenDonateForFundraiser(f);
+        }}
+      />
+
+      <DonorDashboardModal
+        isOpen={isDonorDashboardOpen}
+        onClose={() => setIsDonorDashboardOpen(false)}
+        donations={donations}
+        onOpenImpactChain={() => {
+          setIsDonorDashboardOpen(false);
+          handleOpenGeneralImpactChain();
+        }}
+      />
+
+      <NeedHelpModal
+        isOpen={isNeedHelpOpen}
+        onClose={() => setIsNeedHelpOpen(false)}
+      />
+
+      <SOSModal
+        isOpen={isSOSOpen}
+        onClose={() => setIsSOSOpen(false)}
+      />
+
+      <VoiceAssistantModal
+        isOpen={isVoiceAssistantOpen}
+        onClose={() => setIsVoiceAssistantOpen(false)}
+        onOpenDonate={(fundId) => {
+          setIsVoiceAssistantOpen(false);
+          const f = fundraisers.find(fund => fund.id === fundId) || fundraisers[0];
+          handleOpenDonateForFundraiser(f);
+        }}
+        onOpenChain={() => {
+          setIsVoiceAssistantOpen(false);
+          handleOpenGeneralImpactChain();
+        }}
       />
 
     </div>

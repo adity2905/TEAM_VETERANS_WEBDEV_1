@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { NGO } from '@/types';
 import { DataService } from '@/lib/dataService';
-import { X, PlusCircle, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { X, PlusCircle, Image as ImageIcon, Sparkles, ShieldCheck } from 'lucide-react';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -33,6 +33,8 @@ export default function CreatePostModal({
   const [peopleReached, setPeopleReached] = useState<number>(100);
   const [metricsLabel, setMetricsLabel] = useState('People Reached');
   const [mediaUrl, setMediaUrl] = useState(SAMPLE_IMAGES[0].url);
+  const [consentGiven, setConsentGiven] = useState(true);
+  const [privacyProtected, setPrivacyProtected] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
@@ -40,6 +42,10 @@ export default function CreatePostModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !content) return;
+    if (!consentGiven || !privacyProtected) {
+      alert('Please confirm community consent and sensitive information protection before submitting.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -66,7 +72,7 @@ export default function CreatePostModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Header */}
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between">
@@ -112,8 +118,8 @@ export default function CreatePostModal({
                 onChange={(e) => setActivityType(e.target.value as any)}
                 className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
-                <option value="past_impact">Verified Past Impact</option>
-                <option value="upcoming_event">Upcoming Community Event</option>
+                <option value="past_impact">Verified Ground Impact</option>
+                <option value="upcoming_event">Upcoming Community Drive</option>
                 <option value="story">Beneficiary Story</option>
               </select>
             </div>
@@ -219,12 +225,40 @@ export default function CreatePostModal({
             </div>
           </div>
 
+          {/* Ethics & Consent Safeguards */}
+          <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-3.5 space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>Ethical Disclosure & Safeguards</span>
+            </div>
+            
+            <label className="flex items-start gap-2.5 text-xs text-slate-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={consentGiven}
+                onChange={(e) => setConsentGiven(e.target.checked)}
+                className="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+              />
+              <span>I confirm that community and beneficiary consent has been obtained before publishing photos and stories.</span>
+            </label>
+
+            <label className="flex items-start gap-2.5 text-xs text-slate-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={privacyProtected}
+                onChange={(e) => setPrivacyProtected(e.target.checked)}
+                className="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+              />
+              <span>I confirm that sensitive personal information (especially minors and patients) is properly redacted/protected.</span>
+            </label>
+          </div>
+
           {/* Submit CTA */}
           <div className="pt-2">
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-colors text-sm disabled:opacity-50 cursor-pointer"
+              disabled={isSubmitting || !consentGiven || !privacyProtected}
+              className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-md transition-colors text-sm disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? 'Posting...' : 'Publish to Verified Feed'}
             </button>
