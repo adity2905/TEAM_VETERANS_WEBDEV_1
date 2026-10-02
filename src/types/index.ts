@@ -1,19 +1,87 @@
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role: 'user' | 'ngo' | 'admin';
+  city?: string;
+  state?: string;
+  created_at?: string;
+}
+
 export interface NGO {
   id: string;
   name: string;
   slug: string;
   tagline: string;
   description: string;
-  category: 'Hunger Relief' | 'Education' | 'Healthcare' | 'Environment' | 'Animal Welfare' | 'Disaster Relief';
+  category: 'Hunger Relief' | 'Education' | 'Healthcare' | 'Environment' | 'Animal Welfare' | 'Disaster Relief' | 'Rural Development' | 'Women Empowerment' | 'Child Welfare' | 'Agriculture';
+  causes?: string[];
   location: string;
+  state?: string;
+  district?: string;
+  city?: string;
+  public_address?: string;
   website?: string;
   logo_url: string;
   banner_url: string;
   verified: boolean;
+  verification_status?: 'pending_review' | 'under_review' | 'platform_verified' | 'rejected';
   transparency_score: number; // 0 - 100
   founded_year: number;
   reg_number: string;
+  organization_type?: 'Trust' | 'Society' | 'Section 8 Company' | 'NGO' | 'Other';
+  renewal_status?: 'Active' | 'Renewal Due' | 'Expired' | 'Not Applicable';
+  last_renewal_date?: string;
+  registration_authority?: string;
+  latitude?: number;
+  longitude?: number;
+  active_campaigns_count?: number;
+  volunteers_needed_count?: number;
+  people_reached_count?: number;
   created_at?: string;
+}
+
+export interface NGORegistrationSubmission {
+  id: string;
+  organization_name: string;
+  organization_type: string;
+  email: string;
+  mobile: string;
+  website?: string;
+  official_address: string;
+  state: string;
+  district: string;
+  city: string;
+  pin_code: string;
+  registration_number: string;
+  registration_date: string;
+  renewal_status: string;
+  last_renewal_date: string;
+  registration_authority: string;
+  pan_number: string; // Internal / protected
+  pan_incorporation_date?: string;
+  documents?: { name: string; type: string; uploadedAt: string }[];
+  office_bearers_count: number;
+  office_bearers: { name: string; designation: string }[];
+  latitude?: number;
+  longitude?: number;
+  causes: string[];
+  status: 'pending_review' | 'under_review' | 'platform_verified' | 'rejected';
+  submitted_at: string;
+}
+
+export interface StateImpactData {
+  state: string;
+  ngoCount: number;
+  verifiedNgoCount: number;
+  volunteerCount: number;
+  activeCampaigns: number;
+  peopleReached: number;
+  fundsRaised: string;
+  causes: string[];
+  districts?: string[];
+  center: [number, number]; // [lat, lng] for map centering
 }
 
 export interface Post {
@@ -82,4 +150,13 @@ export interface VolunteerApplication {
   skills?: string;
   status: 'pending' | 'approved';
   created_at: string;
+}
+
+export interface AIImpactAnalysis {
+  activity: string;
+  location: string;
+  beneficiaries: string;
+  volunteers: string;
+  resources: string;
+  impact_summary: string;
 }

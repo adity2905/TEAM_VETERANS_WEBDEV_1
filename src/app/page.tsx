@@ -16,6 +16,7 @@ import NeedHelpModal from '@/components/NeedHelpModal';
 import SOSModal from '@/components/SOSModal';
 import VoiceAssistantModal from '@/components/VoiceAssistantModal';
 import ImpactMap from '@/components/ImpactMap';
+import AIImpactSummaryModal from '@/components/AIImpactSummaryModal';
 import { NGO, Post, Fundraiser, VolunteerNeed, Donation } from '@/types';
 import { DataService } from '@/lib/dataService';
 import { 
@@ -86,6 +87,7 @@ export default function Home() {
   const [isNeedHelpOpen, setIsNeedHelpOpen] = useState(false);
   const [isSOSOpen, setIsSOSOpen] = useState(false);
   const [isVoiceAssistantOpen, setIsVoiceAssistantOpen] = useState(false);
+  const [isAISummaryOpen, setIsAISummaryOpen] = useState(false);
 
   // Load initial data
   const loadAllData = async () => {
@@ -221,6 +223,7 @@ export default function Home() {
         onOpenNeedHelp={() => setIsNeedHelpOpen(true)}
         onOpenVoiceAssistant={() => setIsVoiceAssistantOpen(true)}
         onOpenSOS={() => setIsSOSOpen(true)}
+        onOpenAISummary={() => setIsAISummaryOpen(true)}
       />
 
       {/* Hero Banner with Live Metrics & Impact Chain CTA */}
@@ -900,6 +903,11 @@ export default function Home() {
           setIsVoiceAssistantOpen(false);
           handleOpenGeneralImpactChain();
         }}
+      />
+
+      <AIImpactSummaryModal
+        isOpen={isAISummaryOpen}
+        onClose={() => setIsAISummaryOpen(false)}
       />
 
     </div>

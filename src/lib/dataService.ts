@@ -1,4 +1,4 @@
-import { NGO, Post, Fundraiser, VolunteerNeed, Donation, VolunteerApplication } from '@/types';
+import { NGO, Post, Fundraiser, VolunteerNeed, Donation, VolunteerApplication, User, StateImpactData, NGORegistrationSubmission } from '@/types';
 import { INITIAL_NGOS, INITIAL_POSTS, INITIAL_FUNDRAISERS, INITIAL_VOLUNTEER_NEEDS } from './mockData';
 import { supabase, isSupabaseConfigured } from './supabase';
 
@@ -375,4 +375,152 @@ export const DataService = {
       }
     }
   },
+
+  // --- State Metrics & Geographic Ledger ---
+  async getStateMetrics(): Promise<StateImpactData[]> {
+    const { STATE_METRICS } = await import('./mockData');
+    return STATE_METRICS;
+  },
+
+  async getStateByName(stateName: string): Promise<StateImpactData | undefined> {
+    const metrics = await this.getStateMetrics();
+    const cleanQuery = decodeURIComponent(stateName).toLowerCase().replace(/-/g, ' ');
+    return metrics.find((s) => s.state.toLowerCase() === cleanQuery || s.state.toLowerCase().includes(cleanQuery));
+  },
+
+  async getNGOsByState(stateName: string): Promise<NGO[]> {
+    const ngos = await this.getNGOs();
+    const clean = decodeURIComponent(stateName).toLowerCase().replace(/-/g, ' ');
+    return ngos.filter((n) => (n.state && n.state.toLowerCase().includes(clean)) || n.location.toLowerCase().includes(clean));
+  },
+
+  // --- NGO Registration Submissions & Verification Pipeline ---
+  async registerNGO(submission: Omit<NGORegistrationSubmission, 'id' | 'submitted_at' | 'status'>): Promise<NGORegistrationSubmission> {
+    const newSubmission: NGORegistrationSubmission = {
+      ...submission,
+      id: `sub-${Date.now()}`,
+      status: 'pending_review',
+      submitted_at: new Date().toISOString(),
+    };
+
+    const currentSubs = getLocalItem<NGORegistrationSubmission[]>('openseva_ngo_submissions', [
+      {
+        id: 'sub-vishwakarma',
+        organization_name: 'Vishwakarma Services Foundation',
+        organization_type: 'Trust',
+        email: 'info@vishwakarma-foundation.org',
+        mobile: '+91 98220 54321',
+        official_address: 'Survey No. 42, Shivajinagar, Pune 411005',
+        state: 'Maharashtra',
+        district: 'Pune',
+        city: 'Pune',
+        pin_code: '411005',
+        registration_number: 'MAH-PUN-2017-8821',
+        registration_date: '2017-08-15',
+        renewal_status: 'Active',
+        last_renewal_date: '2025-08-15',
+        registration_authority: 'Charity Commissioner, Pune',
+        pan_number: 'AAATV1234F',
+        office_bearers_count: 5,
+        office_bearers: [
+          { name: 'Dr. Ramesh Vishwakarma', designation: 'President' },
+          { name: 'Smt. Sunita Patil', designation: 'Secretary' },
+          { name: 'Shri. Anand Deshmukh', designation: 'Treasurer' },
+        ],
+        causes: ['Education', 'Healthcare', 'Rural Development'],
+        status: 'platform_verified',
+        submitted_at: '2026-09-01T10:00:00Z',
+      }
+    ]);
+
+    const updated = [newSubmission, ...currentSubs];
+    setLocalItem('openseva_ngo_submissions', updated);
+    return newSubmission;
+  },
+
+  async getNGOSubmissions(): Promise<NGORegistrationSubmission[]> {
+    return getLocalItem<NGORegistrationSubmission[]>('openseva_ngo_submissions', [
+      {
+        id: 'sub-vishwakarma',
+        organization_name: 'Vishwakarma Services Foundation',
+        organization_type: 'Trust',
+        email: 'info@vishwakarma-foundation.org',
+        mobile: '+91 98220 54321',
+        official_address: 'Survey No. 42, Shivajinagar, Pune 411005',
+        state: 'Maharashtra',
+        district: 'Pune',
+        city: 'Pune',
+        pin_code: '411005',
+        registration_number: 'MAH-PUN-2017-8821',
+        registration_date: '2017-08-15',
+        renewal_status: 'Active',
+        last_renewal_date: '2025-08-15',
+        registration_authority: 'Charity Commissioner, Pune',
+        pan_number: 'AAATV1234F',
+        office_bearers_count: 5,
+        office_bearers: [
+          { name: 'Dr. Ramesh Vishwakarma', designation: 'President' },
+          { name: 'Smt. Sunita Patil', designation: 'Secretary' },
+          { name: 'Shri. Anand Deshmukh', designation: 'Treasurer' },
+        ],
+        causes: ['Education', 'Healthcare', 'Rural Development'],
+        status: 'platform_verified',
+        submitted_at: '2026-09-01T10:00:00Z',
+      }
+    ]);
+  },
+
+  async updateNGOSubmissionStatus(id: string, status: NGORegistrationSubmission['status']): Promise<void> {
+    const subs = await this.getNGOSubmissions();
+    const updated = subs.map((s) => (s.id === id ? { ...s, status } : s));
+    setLocalItem('openseva_ngo_submissions', updated);
+  },
+
+  // --- Auth Session Simulation ---
+  getCurrentUser(): User | null {
+    return getLocalItem<User | null>('openseva_auth_user', {
+      id: 'usr-demo-1',
+      name: 'Aditya Verma',
+      email: 'aditya@tektonix.internal',
+      phone: '+91 98200 11223',
+      role: 'user',
+      city: 'Pune',
+      state: 'Maharashtra',
+    });
+  },
+
+  setCurrentUser(user: User | null): void {
+    setLocalItem('openseva_auth_user', user);
+  },
+
+  async loginUser(email: string, _pass: string): Promise<{ user: User }> {
+    const role = email.toLowerCase().includes('ngo') ? 'ngo' : email.toLowerCase().includes('admin') ? 'admin' : 'user';
+    const user: User = {
+      id: `usr-${Date.now().toString(36)}`,
+      name: email.split('@')[0].replace('.', ' ').toUpperCase(),
+      email,
+      phone: '+91 98765 43210',
+      role,
+      city: 'Pune',
+      state: 'Maharashtra',
+    };
+    this.setCurrentUser(user);
+    return { user };
+  },
+
+  async registerUser(name: string, email: string, phone: string, _pass: string, role: 'user' | 'ngo' = 'user', city: string = 'Pune', state: string = 'Maharashtra'): Promise<{ user: User }> {
+    const user: User = {
+      id: `usr-${Date.now().toString(36)}`,
+      name,
+      email,
+      phone,
+      role,
+      city,
+      state,
+      created_at: new Date().toISOString(),
+    };
+    this.setCurrentUser(user);
+    return { user };
+  },
 };
+
