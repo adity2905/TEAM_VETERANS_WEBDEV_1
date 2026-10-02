@@ -19,6 +19,7 @@ import ImpactMap from '@/components/ImpactMap';
 import AIImpactSummaryModal from '@/components/AIImpactSummaryModal';
 import RegisterNGOModal from '@/components/RegisterNGOModal';
 import UserVerificationModal from '@/components/UserVerificationModal';
+import RegistrationChoiceModal from '@/components/RegistrationChoiceModal';
 import { NGO, Post, Fundraiser, VolunteerNeed, Donation, UserVerification } from '@/types';
 import { DataService } from '@/lib/dataService';
 import { 
@@ -96,6 +97,7 @@ export default function Home() {
   // Mentor Requested Modals State
   const [isRegisterNGOOpen, setIsRegisterNGOOpen] = useState(false);
   const [isUserVerifyOpen, setIsUserVerifyOpen] = useState(false);
+  const [isRegistrationChoiceOpen, setIsRegistrationChoiceOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserVerification | null>(null);
 
   // Load initial data
@@ -123,6 +125,18 @@ export default function Home() {
 
   useEffect(() => {
     loadAllData();
+
+    // Welcome registration & role selection popup trigger
+    if (typeof window !== 'undefined') {
+      const hasSeenThisSession = sessionStorage.getItem('transparency_role_popup_shown');
+      if (!hasSeenThisSession) {
+        const timer = setTimeout(() => {
+          setIsRegistrationChoiceOpen(true);
+          sessionStorage.setItem('transparency_role_popup_shown', 'true');
+        }, 700);
+        return () => clearTimeout(timer);
+      }
+    }
   }, []);
 
   // Filter Categories with Counts
@@ -244,6 +258,7 @@ export default function Home() {
         onOpenAISummary={() => setIsAISummaryOpen(true)}
         onOpenRegisterNGO={() => setIsRegisterNGOOpen(true)}
         onOpenUserVerify={() => setIsUserVerifyOpen(true)}
+        onOpenRegistrationChoice={() => setIsRegistrationChoiceOpen(true)}
         isUserVerified={!!currentUser?.verified}
         currentUserName={currentUser?.full_name}
       />
@@ -277,6 +292,16 @@ export default function Home() {
             <div className="mt-6 flex flex-wrap gap-2.5">
               <button
                 type="button"
+                onClick={() => setIsRegistrationChoiceOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md hover:scale-102 transition-all cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black hover:shadow-lg"
+                title="Choose to register as NGO, Citizen KYC or browse as Guest"
+              >
+                <Sparkles className="w-4 h-4 text-slate-950" />
+                <span>1. Get Started / Choose Role</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setIsUserVerifyOpen(true)}
                 className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-xs hover:scale-102 transition-all cursor-pointer border ${
                   currentUser?.verified
@@ -285,16 +310,16 @@ export default function Home() {
                 }`}
               >
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                <span>{currentUser?.verified ? `KYC: ${currentUser.full_name}` : '1. Mandatory Citizen KYC'}</span>
+                <span>{currentUser?.verified ? `KYC: ${currentUser.full_name}` : '2. Citizen KYC Pass'}</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setIsRegisterNGOOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 hover:scale-102 text-white font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 hover:scale-102 text-white font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer border border-white/20"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>2. Register NGO (With Proofs)</span>
+                <span>3. Register NGO (With Proofs)</span>
               </button>
 
               <button
@@ -303,7 +328,7 @@ export default function Home() {
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 hover:scale-102 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer"
               >
                 <Layers className="w-4 h-4 text-slate-950" />
-                <span>3. Trace ₹75K Audit Chain</span>
+                <span>4. Trace ₹75K Audit Chain</span>
               </button>
 
               <button
@@ -1162,6 +1187,26 @@ export default function Home() {
         onClose={() => setIsUserVerifyOpen(false)}
         onVerificationComplete={(verifiedUser) => {
           setCurrentUser(verifiedUser);
+        }}
+      />
+
+      {/* Welcome / Role Onboarding Choice Popup Modal */}
+      <RegistrationChoiceModal
+        isOpen={isRegistrationChoiceOpen}
+        onClose={() => setIsRegistrationChoiceOpen(false)}
+        onSelectRegisterNGO={() => {
+          setIsRegistrationChoiceOpen(false);
+          setIsRegisterNGOOpen(true);
+        }}
+        onSelectRegisterUser={() => {
+          setIsRegistrationChoiceOpen(false);
+          setIsUserVerifyOpen(true);
+        }}
+        onSelectExploreOnly={() => {
+          setIsRegistrationChoiceOpen(false);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('transparency_role_preference', 'guest_explorer');
+          }
         }}
       />
 

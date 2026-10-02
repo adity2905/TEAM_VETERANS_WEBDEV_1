@@ -34,6 +34,7 @@ interface NavbarProps {
   onOpenAISummary?: () => void;
   onOpenRegisterNGO?: () => void;
   onOpenUserVerify?: () => void;
+  onOpenRegistrationChoice?: () => void;
   isUserVerified?: boolean;
   currentUserName?: string;
 }
@@ -51,6 +52,7 @@ export default function Navbar({
   onOpenAISummary,
   onOpenRegisterNGO,
   onOpenUserVerify,
+  onOpenRegistrationChoice,
   isUserVerified = false,
   currentUserName,
 }: NavbarProps) {
@@ -209,6 +211,20 @@ export default function Navbar({
                     </div>
                   </Link>
 
+                  <button
+                    type="button"
+                    onClick={onOpenRegistrationChoice}
+                    className="w-full text-left px-3.5 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 flex items-center gap-2.5 cursor-pointer bg-emerald-50/50"
+                  >
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    <div>
+                      <div className="font-bold text-emerald-950">Registration Hub</div>
+                      <div className="text-[10px] text-emerald-700">Choose NGO, Citizen or Guest</div>
+                    </div>
+                  </button>
+
+                  <div className="border-t border-slate-100 my-1"></div>
+
                   <Link
                     href="/dashboard"
                     className="w-full text-left px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center gap-2.5"
@@ -223,26 +239,26 @@ export default function Navbar({
               )}
             </div>
 
-            {/* Citizen KYC Pass Button (Mentor Requirement) */}
+            {/* Citizen KYC Pass Button */}
             <button
               type="button"
-              onClick={onOpenUserVerify}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+              onClick={onOpenRegistrationChoice || onOpenUserVerify}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                 isUserVerified
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
                   : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
               }`}
-              title="Citizen KYC Status (Mandatory for donors & volunteers)"
+              title="Click to manage registration, switch roles or complete KYC"
             >
               <ShieldCheck className={`w-3.5 h-3.5 ${isUserVerified ? 'text-emerald-600' : 'text-slate-400'}`} />
-              <span className="hidden sm:inline">{isUserVerified ? (currentUserName || 'KYC Verified') : 'Verify ID'}</span>
+              <span className="hidden sm:inline">{isUserVerified ? (currentUserName || 'Aditya Verma (Verified Citizen)') : 'Verify ID'}</span>
             </button>
 
-            {/* Register NGO Button (Mentor Requirement) */}
+            {/* Register NGO Button */}
             <button
               type="button"
-              onClick={onOpenRegisterNGO}
-              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors border border-emerald-200 cursor-pointer"
+              onClick={onOpenRegistrationChoice || onOpenRegisterNGO}
+              className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors border border-emerald-200 cursor-pointer"
               title="First-time NGO registration with past evidences"
             >
               <Building2 className="w-3.5 h-3.5" />
@@ -307,12 +323,12 @@ export default function Navbar({
             <button
               type="button"
               onClick={() => {
-                onOpenRegisterNGO?.();
+                (onOpenRegistrationChoice || onOpenRegisterNGO)?.();
                 setMobileMenuOpen(false);
               }}
-              className="flex-1 py-2 px-3 rounded-xl bg-emerald-50 text-xs font-bold text-emerald-800"
+              className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 text-xs font-bold text-white text-center cursor-pointer"
             >
-              Register NGO
+              Register / Choose Role
             </button>
             <Link
               href="/dashboard"
