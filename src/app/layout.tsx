@@ -13,8 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OpenCause — Audited NGO Transparency & Verified Impact Platform",
-  description: "Discover verified NGO activities, track live photographic proof of drives, review transparency scores, and contribute directly with automated 80G tax receipts.",
+  title: "Transparency - NGO App | Audited Impact Platform",
+  description: "Transparency: Verified NGO impact platform. Discover audited drives, view live forensic proof, track budget management, and volunteer with confidence.",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

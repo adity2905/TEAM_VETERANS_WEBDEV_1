@@ -55,7 +55,7 @@ export default function VerifyReceipt() {
             className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to OpenCause</span>
+            <span>Back to Transparency</span>
           </Link>
 
           <div className="flex items-center gap-2">

@@ -561,6 +561,17 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Transparency Audited Guarantee Card */}
+              <div className="bg-gradient-to-br from-emerald-500 to-teal-700 text-white rounded-2xl p-5 shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <h4 className="font-bold text-base">Transparency Audited Guarantee</h4>
+                <p className="text-xs text-emerald-100 mt-1 leading-relaxed">
+                  Every contribution is mapped directly to real receipts. Donors receive instant Sec 80G tax deduction receipts with QR verification.
+                </p>
+              </div>
+
             </div>
 
           </div>
@@ -777,9 +788,11 @@ export default function Home() {
       <footer className="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Heart className="w-4 h-4 text-emerald-500 fill-emerald-500" />
-            <span className="text-white font-bold">OpenCause</span>
-            <span>— Built for TEKTONIX 2026 Hackathon</span>
+            <div className="w-5 h-5 rounded-md overflow-hidden bg-emerald-600 flex items-center justify-center p-0.5">
+              <img src="/icon.svg" alt="Transparency" className="w-full h-full object-contain" />
+            </div>
+            <span className="text-white font-bold">Transparency</span>
+            <span>— NGO Transparency Platform</span>
           </div>
           <div className="flex items-center gap-4 text-slate-500">
             <span>Next.js 16</span>

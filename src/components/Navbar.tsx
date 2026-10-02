@@ -60,15 +60,15 @@ export default function Navbar({
           {/* Logo & Platform Tagline */}
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-                <Heart className="w-5 h-5 fill-white" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform overflow-hidden p-1.5">
+                <img src="/icon.svg" alt="Transparency Logo" className="w-full h-full object-contain" />
               </div>
               <div>
-                <span className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
-                  Open<span className="text-emerald-600">Cause</span>
+                <span className="text-xl font-black tracking-tight text-slate-900 flex items-center gap-1">
+                  Trans<span className="text-emerald-600">parency</span>
                 </span>
-                <span className="block text-[10px] uppercase font-semibold tracking-wider text-slate-500">
-                  Transparent NGO Network
+                <span className="block text-[10px] uppercase font-bold tracking-wider text-emerald-700">
+                  Audited NGO Platform
                 </span>
               </div>
             </Link>
