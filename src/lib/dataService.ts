@@ -1,4 +1,4 @@
-import { NGO, Post, Fundraiser, VolunteerNeed, Donation, VolunteerApplication, User, StateImpactData, NGORegistrationSubmission } from '@/types';
+import { NGO, Post, Fundraiser, VolunteerNeed, Donation, VolunteerApplication, User, StateImpactData, NGORegistrationSubmission, UserVerification } from '@/types';
 import { INITIAL_NGOS, INITIAL_POSTS, INITIAL_FUNDRAISERS, INITIAL_VOLUNTEER_NEEDS } from './mockData';
 import { supabase, isSupabaseConfigured } from './supabase';
 
@@ -522,5 +522,38 @@ export const DataService = {
     this.setCurrentUser(user);
     return { user };
   },
+
+  // --- Mentor KYC & NGO Registrations compatibility ---
+  async getNGORegistrations(): Promise<NGORegistrationSubmission[]> {
+    return this.getNGOSubmissions();
+  },
+
+  async approveNGORegistration(id: string): Promise<void> {
+    await this.updateNGOSubmissionStatus(id, 'platform_verified');
+  },
+
+  async submitNGORegistration(data: any): Promise<any> {
+    return this.registerNGO(data);
+  },
+
+  saveUserVerification(user: Partial<UserVerification> & { full_name: string; id_type: any; id_number: string; phone: string; email: string; city: string }): UserVerification {
+    const verifiedUser: UserVerification = {
+      id: `usr_${Date.now()}`,
+      full_name: user.full_name,
+      id_type: user.id_type,
+      id_number: user.id_number,
+      phone: user.phone,
+      email: user.email,
+      city: user.city,
+      verified_at: new Date().toISOString(),
+    };
+    setLocalItem('openseva_user_verification', verifiedUser);
+    return verifiedUser;
+  },
+
+  getUserVerification(): UserVerification | null {
+    return getLocalItem<UserVerification | null>('openseva_user_verification', null);
+  },
 };
+
 

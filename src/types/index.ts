@@ -9,6 +9,19 @@ export interface User {
   created_at?: string;
 }
 
+export interface UserVerification {
+  id?: string;
+  full_name: string;
+  fullName?: string;
+  id_type: 'Aadhaar' | 'PAN' | 'Voter ID' | 'Driving License';
+  id_number: string;
+  idNumber?: string;
+  phone: string;
+  email: string;
+  city: string;
+  verified_at?: string;
+}
+
 export interface NGO {
   id: string;
   name: string;
@@ -44,31 +57,41 @@ export interface NGO {
 
 export interface NGORegistrationSubmission {
   id: string;
-  organization_name: string;
-  organization_type: string;
-  email: string;
-  mobile: string;
+  organization_name?: string;
+  name?: string;
+  organization_type?: string;
+  category?: string;
+  email?: string;
+  official_email?: string;
+  mobile?: string;
   website?: string;
-  official_address: string;
-  state: string;
-  district: string;
-  city: string;
-  pin_code: string;
-  registration_number: string;
-  registration_date: string;
-  renewal_status: string;
-  last_renewal_date: string;
-  registration_authority: string;
-  pan_number: string; // Internal / protected
+  official_address?: string;
+  state?: string;
+  district?: string;
+  city?: string;
+  pin_code?: string;
+  registration_number?: string;
+  reg_number?: string;
+  registration_date?: string;
+  renewal_status?: string;
+  last_renewal_date?: string;
+  registration_authority?: string;
+  pan_number?: string;
   pan_incorporation_date?: string;
+  annual_budget?: number;
+  head_officer_name?: string;
+  head_officer_phone?: string;
+  audit_report_url?: string;
+  past_event_proof_url?: string;
+  video_proof_url?: string;
   documents?: { name: string; type: string; uploadedAt: string }[];
-  office_bearers_count: number;
-  office_bearers: { name: string; designation: string }[];
+  office_bearers_count?: number;
+  office_bearers?: { name: string; designation: string }[];
   latitude?: number;
   longitude?: number;
-  causes: string[];
-  status: 'pending_review' | 'under_review' | 'platform_verified' | 'rejected';
-  submitted_at: string;
+  causes?: string[];
+  status: 'pending_review' | 'under_review' | 'platform_verified' | 'rejected' | 'verified' | 'pending';
+  submitted_at?: string;
 }
 
 export interface StateImpactData {

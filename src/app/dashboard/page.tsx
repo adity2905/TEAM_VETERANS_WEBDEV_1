@@ -39,12 +39,13 @@ export default function NGODashboard() {
   const [needSuccess, setNeedSuccess] = useState(false);
 
   const loadData = async () => {
-    const [allNgos, allFunds, allNeeds, allApps, allDons] = await Promise.all([
+    const [allNgos, allFunds, allNeeds, allApps, allDons, allNgoApps] = await Promise.all([
       DataService.getNGOs(),
       DataService.getFundraisers(),
       DataService.getVolunteerNeeds(),
       DataService.getVolunteerApplications(),
       DataService.getDonations(),
+      DataService.getNGORegistrations(),
     ]);
 
     setNgos(allNgos);
@@ -52,7 +53,7 @@ export default function NGODashboard() {
     setVolunteerNeeds(allNeeds);
     setApplications(allApps);
     setDonations(allDons);
-    setNgoApplications(DataService.getNGORegistrations());
+    setNgoApplications(allNgoApps);
   };
 
   useEffect(() => {
@@ -663,7 +664,7 @@ export default function NGODashboard() {
                           <span>•</span>
                           <span>PAN: <strong className="text-slate-200">{app.pan_number}</strong></span>
                           <span>•</span>
-                          <span>Annual Budget: <strong className="text-emerald-400">₹{app.annual_budget.toLocaleString('en-IN')}</strong></span>
+                          <span>Annual Budget: <strong className="text-emerald-400">{app.annual_budget ? `₹${app.annual_budget.toLocaleString('en-IN')}` : 'Undisclosed'}</strong></span>
                         </div>
                       </div>
 

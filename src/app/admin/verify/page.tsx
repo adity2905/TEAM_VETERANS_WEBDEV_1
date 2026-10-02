@@ -267,8 +267,8 @@ export default function AdminVerificationPage() {
                   <strong>Organization PAN:</strong> <span className="font-mono font-bold">{selectedSubmission.pan_number}</span>
                 </div>
                 <div className="text-slate-700">
-                  <strong>Office Bearers ({selectedSubmission.office_bearers_count}):</strong>{' '}
-                  {selectedSubmission.office_bearers.map((b) => `${b.name} (${b.designation})`).join(', ')}
+                  <strong>Office Bearers ({selectedSubmission.office_bearers_count || selectedSubmission.office_bearers?.length || 0}):</strong>{' '}
+                  {selectedSubmission.office_bearers?.map((b) => `${b.name} (${b.designation})`).join(', ') || 'N/A'}
                 </div>
               </div>
 
@@ -278,7 +278,7 @@ export default function AdminVerificationPage() {
                   Verified Causes
                 </span>
                 <div className="flex flex-wrap gap-1.5">
-                  {selectedSubmission.causes.map((cause) => (
+                  {(selectedSubmission.causes || []).map((cause) => (
                     <span
                       key={cause}
                       className="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-100"
