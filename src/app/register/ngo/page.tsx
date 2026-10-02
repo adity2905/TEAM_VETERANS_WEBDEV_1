@@ -18,7 +18,10 @@ import {
   Loader2, 
   Sparkles,
   Lock,
-  Heart
+  Heart,
+  Award,
+  Eye,
+  X
 } from 'lucide-react';
 import { DataService } from '@/lib/dataService';
 
@@ -43,7 +46,7 @@ export default function NGORegistrationPage() {
 
   // Step 1: Organization Details
   const [orgName, setOrgName] = useState('Vishwakarma Services Foundation');
-  const [orgType, setOrgType] = useState<'Trust' | 'Society' | 'Section 8 Company' | 'NGO' | 'Other'>('Trust');
+  const [orgType, setOrgType] = useState<'Trust' | 'Society' | 'Section 8 Company' | 'NGO' | 'Other'>('Society');
   const [email, setEmail] = useState('contact@vishwakarma-foundation.org');
   const [mobile, setMobile] = useState('+91 98220 54321');
   const [website, setWebsite] = useState('https://vishwakarma-foundation.org');
@@ -54,17 +57,18 @@ export default function NGORegistrationPage() {
   const [pinCode, setPinCode] = useState('411005');
 
   // Step 2: Registration Details
-  const [regNumber, setRegNumber] = useState('MAH-PUN-2017-8821');
-  const [regDate, setRegDate] = useState('2017-08-15');
+  const [regNumber, setRegNumber] = useState('S/1482/Distt. South/2011');
+  const [regDate, setRegDate] = useState('2011-10-19');
   const [renewalStatus, setRenewalStatus] = useState<'Active' | 'Renewal Due' | 'Expired' | 'Not Applicable'>('Active');
   const [lastRenewalDate, setLastRenewalDate] = useState('2025-08-15');
-  const [regAuthority, setRegAuthority] = useState('Charity Commissioner, Pune');
+  const [regAuthority, setRegAuthority] = useState('Registrar of Societies, South District, Govt of NCT of Delhi');
 
   // Step 3: Tax / Identity Details
   const [panNumber, setPanNumber] = useState('AAATV1234F');
-  const [incorporationDate, setIncorporationDate] = useState('2017-08-15');
+  const [incorporationDate, setIncorporationDate] = useState('2011-10-19');
+  const [isPreviewSpecimenOpen, setIsPreviewSpecimenOpen] = useState(false);
   const [uploadedDocs, setUploadedDocs] = useState<Array<{ name: string; size: string; progress: number }>>([
-    { name: 'Trust_Deed_Registration_MAH.pdf', size: '2.4 MB', progress: 100 },
+    { name: 'Societies_Registration_Act_1860_Official_Certificate.pdf', size: '1.8 MB', progress: 100 },
     { name: 'Organization_PAN_Card.pdf', size: '850 KB', progress: 100 },
   ]);
 
@@ -600,10 +604,47 @@ export default function NGORegistrationPage() {
                   </div>
                 </div>
 
+                {/* MANDATORY SOCIETIES REGISTRATION ACT 1860 CERTIFICATE CARD */}
+                <div className="bg-emerald-50/70 border-2 border-emerald-300 rounded-2xl p-4 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 bg-emerald-600 text-white rounded-lg">
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-black text-emerald-950 uppercase tracking-wide">
+                            Mandatory Statutory Document
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
+                            Required *
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-bold text-slate-800">
+                          Certificate of Registration Under Societies Registration Act XXI of 1860
+                        </h4>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsPreviewSpecimenOpen(true)}
+                      className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-emerald-800 border border-emerald-300 hover:bg-emerald-100/50 shadow-2xs transition-colors cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>View Specimen</span>
+                    </button>
+                  </div>
+
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Must display the official Seal of Registrar of Societies (Government of NCT of Delhi / District Registrar), Registration Number (e.g. <code>S/____/Distt. South/2011</code>), and Registrar's Signature.
+                  </p>
+                </div>
+
                 {/* Upload Documents Card */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Upload Certificates (Registration Cert / PAN / Trust Deed)
+                    Upload Certificates (Societies Reg. Cert / Trust Deed / PAN)
                   </label>
                   
                   <div className="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-emerald-500 transition-colors bg-slate-50/50">
@@ -885,6 +926,64 @@ export default function NGORegistrationPage() {
         )}
 
       </div>
+
+      {/* Specimen Certificate Preview Modal */}
+      {isPreviewSpecimenOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200">
+            <div className="bg-slate-900 text-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-emerald-400" />
+                <div>
+                  <h4 className="text-sm font-bold">Official Certificate of Registration</h4>
+                  <p className="text-[10px] text-slate-400">Societies Registration Act XXI of 1860 Specimen</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPreviewSpecimenOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 overflow-y-auto space-y-3 bg-slate-50 flex-1">
+              <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-xs flex justify-center">
+                <img 
+                  src="/sample-registration-certificate.png" 
+                  alt="Certificate of Registration Under Societies Registration Act XXI of 1860" 
+                  className="max-h-[60vh] object-contain rounded-lg border border-slate-100"
+                />
+              </div>
+
+              <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-xs space-y-1 text-emerald-950">
+                <div className="font-bold flex items-center gap-1.5 text-emerald-900">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  Mandatory Legal Verification Markers:
+                </div>
+                <ul className="list-disc pl-5 space-y-0.5 text-[11px] text-slate-700">
+                  <li><strong>Title:</strong> Certificate of Registration Under Societies Registration Act XXI of 1860</li>
+                  <li><strong>State Seal:</strong> Official Seal of the Registrar of Societies (Government of NCT of Delhi / State)</li>
+                  <li><strong>Officer Signature:</strong> Signed by Registrar of Societies (e.g. Pravesh Ranjan Jha, South District)</li>
+                  <li><strong>Regn Number:</strong> Form S/___/Distt. South/2011 format</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="p-3 bg-white border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsPreviewSpecimenOpen(false)}
+                className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors"
+              >
+                Close Specimen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

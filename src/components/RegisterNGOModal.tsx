@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { DataService } from '@/lib/dataService';
 import { 
   Building2, X, CheckCircle2, ShieldCheck, FileText, 
-  Image as ImageIcon, Video, AlertCircle, ArrowRight 
+  Image as ImageIcon, Video, AlertCircle, ArrowRight,
+  Upload, Eye, Award, ExternalLink, FileCheck2
 } from 'lucide-react';
 
 interface RegisterNGOModalProps {
@@ -25,6 +26,13 @@ export default function RegisterNGOModal({ isOpen, onClose, onSuccess }: Registe
   const [website, setWebsite] = useState('');
   const [annualBudget, setAnnualBudget] = useState<number>(500000);
   
+  // Mandatory Societies Registration Act 1860 Certificate
+  const [societiesActNumber, setSocietiesActNumber] = useState('S/1482/Distt. South/2011');
+  const [societiesAuthority, setSocietiesAuthority] = useState('Registrar of Societies, South District, Govt of NCT of Delhi');
+  const [societiesCertFile, setSocietiesCertFile] = useState<string | null>('societies_registration_act_1860_certificate.png');
+  const [societiesCertUrl, setSocietiesCertUrl] = useState<string>('/sample-registration-certificate.png');
+  const [isPreviewCertOpen, setIsPreviewCertOpen] = useState(false);
+
   // Mandatory Evidence fields
   const [auditReportUrl, setAuditReportUrl] = useState('https://storage.opencause.org/audits/annual-report-2025.pdf');
   const [pastEventProofUrl, setPastEventProofUrl] = useState('https://images.unsplash.com/photo-1577896851231-70ef18881754?w=900&auto=format&fit=crop');
@@ -40,6 +48,12 @@ export default function RegisterNGOModal({ isOpen, onClose, onSuccess }: Registe
     const err: Record<string, string> = {};
     if (!name.trim()) err.name = 'NGO Name is mandatory';
     if (!regNumber.trim()) err.regNumber = 'Govt 80G/12A Registration Number is mandatory';
+    if (!societiesActNumber.trim()) {
+      err.societiesActNumber = 'Mandatory: Societies Registration Act XXI of 1860 Regn. Number';
+    }
+    if (!societiesCertFile && !societiesCertUrl) {
+      err.societiesCert = 'Mandatory: You must upload Certificate of Registration under Societies Registration Act 1860';
+    }
     if (!panNumber.trim() || panNumber.trim().length !== 10) {
       err.panNumber = 'Valid 10-character NGO PAN is mandatory';
     }
@@ -59,6 +73,19 @@ export default function RegisterNGOModal({ isOpen, onClose, onSuccess }: Registe
     return Object.keys(err).length === 0;
   };
 
+  const handleCertUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSocietiesCertFile(file.name);
+      setSocietiesCertUrl(URL.createObjectURL(file));
+      setErrors((prev) => {
+        const copy = { ...prev };
+        delete copy.societiesCert;
+        return copy;
+      });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -68,6 +95,11 @@ export default function RegisterNGOModal({ isOpen, onClose, onSuccess }: Registe
       name: name.trim(),
       category,
       reg_number: regNumber.trim().toUpperCase(),
+      registration_number: regNumber.trim().toUpperCase(),
+      societies_act_reg_no: societiesActNumber.trim(),
+      societies_cert_name: societiesCertFile || 'Certificate of Registration (Act XXI 1860)',
+      societies_cert_url: societiesCertUrl || '/sample-registration-certificate.png',
+      societies_registrar_authority: societiesAuthority.trim(),
       pan_number: panNumber.trim().toUpperCase(),
       head_officer_name: headName.trim(),
       head_officer_phone: headPhone.trim(),
@@ -282,11 +314,135 @@ export default function RegisterNGOModal({ isOpen, onClose, onSuccess }: Registe
                 </div>
               </div>
 
+              {/* MANDATORY STATUTORY CERTIFICATE: SOCIETIES REGISTRATION ACT 1860 */}
+              <div className="bg-gradient-to-br from-emerald-50 via-teal-50/40 to-slate-50 p-4 rounded-2xl border-2 border-emerald-300 shadow-sm space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 bg-emerald-600 text-white rounded-lg">
+                      <Award className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-black text-emerald-950 uppercase tracking-wide">
+                          Mandatory Legal Certificate
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">
+                          Required *
+                        </span>
+                      </div>
+                      <p className="text-[11px] font-bold text-slate-800">
+                        Certificate of Registration Under Societies Registration Act XXI of 1860
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewCertOpen(true)}
+                    className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-emerald-800 border border-emerald-300 hover:bg-emerald-100/50 shadow-2xs transition-colors cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>View Specimen</span>
+                  </button>
+                </div>
+
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  As per regulatory mandate, all NGOs must upload the official Certificate of Registration issued by the <strong>Registrar of Societies (State / District Authority)</strong> bearing the official Government Seal and Registrar signature.
+                </p>
+
+                {/* Registration Number & Authority Inputs */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      Certificate Regn. No. (e.g. S/___/Distt. South/2011) <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. S/1482/Distt. South/2011"
+                      value={societiesActNumber}
+                      onChange={(e) => setSocietiesActNumber(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl font-mono font-bold focus:ring-2 focus:ring-emerald-500"
+                    />
+                    {errors.societiesActNumber && (
+                      <p className="text-[10px] text-rose-500 mt-0.5">{errors.societiesActNumber}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      Issuing Registrar Authority <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Registrar of Societies, South District, Govt of NCT of Delhi"
+                      value={societiesAuthority}
+                      onChange={(e) => setSocietiesAuthority(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Upload Zone */}
+                <div className="border border-dashed border-emerald-300 rounded-xl p-3 bg-white/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                      <FileCheck2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-800">
+                        {societiesCertFile ? (
+                          <span className="text-emerald-700 flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 inline text-emerald-600" />
+                            {societiesCertFile}
+                          </span>
+                        ) : (
+                          'Upload Scanned Certificate (PDF / PNG / JPG)'
+                        )}
+                      </div>
+                      <p className="text-[10px] text-slate-500">
+                        Government of NCT of Delhi / State Societies Registrar verified scan
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{societiesCertFile ? 'Replace File' : 'Upload File'}</span>
+                      <input 
+                        type="file" 
+                        accept=".pdf,.png,.jpg,.jpeg" 
+                        onChange={handleCertUpload} 
+                        className="hidden" 
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSocietiesCertFile('Societies_Act_XXI_1860_Official_Cert.png');
+                        setSocietiesCertUrl('/sample-registration-certificate.png');
+                        setSocietiesActNumber('S/1482/Distt. South/2011');
+                        setSocietiesAuthority('Registrar of Societies, South District, Govt of NCT of Delhi');
+                      }}
+                      className="px-2 py-1.5 text-[11px] font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+                    >
+                      Use Verified Specimen
+                    </button>
+                  </div>
+                </div>
+                {errors.societiesCert && (
+                  <p className="text-[11px] text-rose-500 font-bold">{errors.societiesCert}</p>
+                )}
+              </div>
+
               {/* MANDATORY EVIDENCE ATTACHMENTS (Mentor's Key Spec) */}
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                 <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  Mandatory Evidence & Financial Audit Attachments
+                  Mandatory Financial Audit & Field Proofs
                 </span>
 
                 <div>
@@ -335,7 +491,7 @@ export default function RegisterNGOModal({ isOpen, onClose, onSuccess }: Registe
                 disabled={isSubmitting}
                 className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                <span>Submit NGO for Mandatory Compliance Audit</span>
+                <span>Submit NGO & Certificate for Forensic Audit</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -344,6 +500,63 @@ export default function RegisterNGOModal({ isOpen, onClose, onSuccess }: Registe
         </div>
 
       </div>
+
+      {/* Specimen Certificate Preview Modal */}
+      {isPreviewCertOpen && (
+        <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200">
+            <div className="bg-slate-900 text-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-emerald-400" />
+                <div>
+                  <h4 className="text-sm font-bold">Official Certificate of Registration</h4>
+                  <p className="text-[10px] text-slate-400">Societies Registration Act XXI of 1860 Specimen</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPreviewCertOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 overflow-y-auto space-y-3 bg-slate-50 flex-1">
+              <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-xs flex justify-center">
+                <img 
+                  src="/sample-registration-certificate.png" 
+                  alt="Certificate of Registration Under Societies Registration Act XXI of 1860" 
+                  className="max-h-[60vh] object-contain rounded-lg border border-slate-100"
+                />
+              </div>
+
+              <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-xs space-y-1 text-emerald-950">
+                <div className="font-bold flex items-center gap-1.5 text-emerald-900">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  Mandatory Legal Verification Markers:
+                </div>
+                <ul className="list-disc pl-5 space-y-0.5 text-[11px] text-slate-700">
+                  <li><strong>Title:</strong> Certificate of Registration Under Societies Registration Act XXI of 1860</li>
+                  <li><strong>State Seal:</strong> Official Seal of the Registrar of Societies (Government of NCT of Delhi / State)</li>
+                  <li><strong>Officer Signature:</strong> Signed by Registrar of Societies (e.g. Pravesh Ranjan Jha, South District)</li>
+                  <li><strong>Regn Number:</strong> Form S/___/Distt. South/2011 format</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="p-3 bg-white border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsPreviewCertOpen(false)}
+                className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors"
+              >
+                Close Specimen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

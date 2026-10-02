@@ -77,6 +77,10 @@ export interface NGORegistrationSubmission {
   renewal_status?: string;
   last_renewal_date?: string;
   registration_authority?: string;
+  societies_cert_url?: string;
+  societies_cert_name?: string;
+  societies_act_reg_no?: string;
+  societies_registrar_authority?: string;
   pan_number?: string;
   pan_incorporation_date?: string;
   annual_budget?: number;

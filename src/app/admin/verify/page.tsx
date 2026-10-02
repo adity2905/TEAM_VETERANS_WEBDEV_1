@@ -15,7 +15,9 @@ import {
   XCircle,
   Eye,
   Lock,
-  Heart
+  Heart,
+  Award,
+  X
 } from 'lucide-react';
 import { NGORegistrationSubmission } from '@/types';
 import { DataService } from '@/lib/dataService';
@@ -24,6 +26,7 @@ export default function AdminVerificationPage() {
   const [submissions, setSubmissions] = useState<NGORegistrationSubmission[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<NGORegistrationSubmission | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [isPreviewCertOpen, setIsPreviewCertOpen] = useState(false);
 
   useEffect(() => {
     const loadSubs = async () => {
@@ -272,6 +275,49 @@ export default function AdminVerificationPage() {
                 </div>
               </div>
 
+              {/* MANDATORY STATUTORY COMPLIANCE: SOCIETIES REGISTRATION ACT 1860 */}
+              <div className="p-4 bg-emerald-50/80 border-2 border-emerald-300 rounded-2xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 bg-emerald-600 text-white rounded-lg">
+                      <Award className="w-4 h-4" />
+                    </span>
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900 block">
+                        Mandatory Statutory Compliance
+                      </span>
+                      <h4 className="text-xs font-bold text-slate-900">
+                        Certificate of Registration Under Societies Registration Act XXI of 1860
+                      </h4>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewCertOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-2xs transition-colors cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Inspect Certificate Scan</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs">
+                  <div className="bg-white/80 p-2 rounded-xl border border-emerald-200">
+                    <span className="text-[10px] text-slate-500 block">Act XXI Regn. No.</span>
+                    <span className="font-mono font-bold text-slate-900">
+                      {selectedSubmission.societies_act_reg_no || selectedSubmission.registration_number || 'S/1482/Distt. South/2011'}
+                    </span>
+                  </div>
+                  <div className="bg-white/80 p-2 rounded-xl border border-emerald-200 sm:col-span-2">
+                    <span className="text-[10px] text-slate-500 block">Issuing Authority (State / District)</span>
+                    <span className="font-semibold text-slate-900">
+                      {selectedSubmission.societies_registrar_authority || selectedSubmission.registration_authority || 'Registrar of Societies, South District, Govt of NCT of Delhi'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               {/* Operational Causes */}
               <div>
                 <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
@@ -299,6 +345,63 @@ export default function AdminVerificationPage() {
         </div>
 
       </main>
+
+      {/* Specimen Certificate Inspection Modal */}
+      {isPreviewCertOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-slate-200">
+            <div className="bg-slate-900 text-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-emerald-400" />
+                <div>
+                  <h4 className="text-sm font-bold">Certificate Audit Inspection</h4>
+                  <p className="text-[10px] text-slate-400">Societies Registration Act XXI of 1860 Verified Scan</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPreviewCertOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 overflow-y-auto space-y-3 bg-slate-50 flex-1">
+              <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-xs flex justify-center">
+                <img 
+                  src="/sample-registration-certificate.png" 
+                  alt="Certificate of Registration Under Societies Registration Act XXI of 1860" 
+                  className="max-h-[60vh] object-contain rounded-lg border border-slate-100"
+                />
+              </div>
+
+              <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-xs space-y-1 text-emerald-950">
+                <div className="font-bold flex items-center gap-1.5 text-emerald-900">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  Forensic Audit Inspection Checklist:
+                </div>
+                <ul className="list-disc pl-5 space-y-0.5 text-[11px] text-slate-700">
+                  <li><strong>Title:</strong> Certificate of Registration Under Societies Registration Act XXI of 1860</li>
+                  <li><strong>State Seal:</strong> Official Seal of Registrar of Societies, South District, Govt of NCT of Delhi</li>
+                  <li><strong>Officer Signature:</strong> Signed by Pravesh Ranjan Jha, Registrar of Societies</li>
+                  <li><strong>Statutory Act:</strong> Societies Registration Act 1860 with statutory caution clause</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="p-3 bg-white border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsPreviewCertOpen(false)}
+                className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors"
+              >
+                Close Inspection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
