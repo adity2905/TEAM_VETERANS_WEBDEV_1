@@ -26,7 +26,7 @@ import {
   Heart, ShieldCheck, Users, Landmark, Search, Filter, 
   Sparkles, PlusCircle, ArrowRight, Award, TrendingUp, CheckCircle2,
   Layers, Mic, AlertTriangle, HelpCircle, MapPin, Camera, Video, DollarSign, Navigation,
-  X, LayoutList, LayoutGrid, FileCheck
+  X, LayoutList, LayoutGrid, FileCheck, ArrowDown, FileText
 } from 'lucide-react';
 
 const SAMPLE_PASSPORT_DONATIONS: Donation[] = [
@@ -263,138 +263,250 @@ export default function Home() {
         currentUserName={currentUser?.full_name}
       />
 
-      {/* Hero Banner with Live Metrics & Impact Chain CTA */}
-      <section className="relative bg-slate-950 text-white pt-10 pb-12 px-4 sm:px-6 lg:px-8 border-b border-emerald-900/30 overflow-hidden">
-        {/* Subtle Ambient Glows */}
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/2 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* High-Impact Social-First Hero Section: "Show, Don't Tell" */}
+      <section className="relative bg-slate-950 text-white pt-8 sm:pt-12 pb-10 px-4 sm:px-6 lg:px-8 border-b border-emerald-900/20 overflow-hidden">
+        {/* Dynamic Atmospheric Ambient Glows */}
+        <div className="absolute -top-32 -left-32 w-120 h-120 bg-emerald-500/12 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/3 -right-32 w-120 h-120 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 left-1/3 w-96 h-96 bg-amber-500/8 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold mb-4 backdrop-blur-md">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>100% Traceable Impact • Zero Black-Box Giving</span>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            
+            {/* Left Column: Bold, Authentic Human Narrative */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* Real-Time Pulse Indicator */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold backdrop-blur-md">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="tracking-wide">LIVE HUMANITARIAN FEED • VERIFIED GROUND PROOF</span>
+              </div>
+
+              {/* Main Headline */}
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1]">
+                Real work. <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-300">
+                  Out in the open.
+                </span> <br />
+                Zero filter.
+              </h1>
+
+              {/* Genuine Value Proposition */}
+              <p className="text-base sm:text-lg text-slate-300 leading-relaxed font-normal max-w-2xl">
+                Every rupee accounted for, every food drive photographed with raw GPS tags, and every initiative led by real ground volunteers across India. Don't take our word for it — inspect the live dispatches below.
+              </p>
+
+              {/* Clean, Non-Numbered Action Cluster */}
+              <div className="pt-2 flex flex-wrap items-center gap-3">
+                <a
+                  href="#ground-feed"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 hover:scale-102 transition-all cursor-pointer"
+                >
+                  <ArrowDown className="w-4 h-4" />
+                  <span>Explore Live Feed</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setIsRegistrationChoiceOpen(true)}
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm backdrop-blur-md border border-white/20 hover:scale-102 transition-all cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
+                  <span>Get Started / Choose Role</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsVoiceAssistantOpen(true)}
+                  className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 font-bold text-sm backdrop-blur-md hover:scale-102 transition-all cursor-pointer"
+                  title="Talk to AI Voice Assistant in Hindi or English"
+                >
+                  <Mic className="w-4 h-4 text-amber-400 animate-pulse" />
+                  <span>वॉयस साथी</span>
+                </button>
+              </div>
+
+              {/* Organic Social Proof: Active Community Presence */}
+              <div className="pt-2 flex items-center gap-3 text-xs text-slate-400">
+                <div className="flex -space-x-2 overflow-hidden">
+                  <img className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop" alt="Volunteer" />
+                  <img className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop" alt="Volunteer" />
+                  <img className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop" alt="Volunteer" />
+                  <img className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-900 object-cover" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop" alt="Volunteer" />
+                </div>
+                <div className="leading-snug">
+                  <span className="font-bold text-white block">28 Active Field Volunteers Deployed Today</span>
+                  <span className="text-slate-400">5,665+ Verified beneficiaries across 14 Indian states</span>
+                </div>
+              </div>
+
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight sm:leading-tight">
-              See the work. <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-                Understand the impact.
-              </span>{' '}
-              Empower change.
-            </h1>
+            {/* Right Column: "Show, Don't Tell" Live Dispatch Showcase Card */}
+            <div className="lg:col-span-5 relative">
+              
+              {/* Floating Live Badge */}
+              <div className="absolute -top-3.5 right-4 z-20 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500 text-slate-950 text-[11px] font-black shadow-lg shadow-emerald-500/40">
+                <Sparkles className="w-3 h-3" />
+                <span>100% DIRECT PASS-THROUGH</span>
+              </div>
 
-            <p className="mt-4 text-base sm:text-lg text-slate-300 leading-relaxed font-light">
-              Explore verified NGO activities, track live photographic proof of drives, review transparency scores, and trace every single rupee from invoice to field deployment.
-            </p>
+              {/* The Live Dispatch Preview Card */}
+              <div className="bg-slate-900/90 rounded-3xl border border-white/15 p-4 sm:p-5 shadow-2xl backdrop-blur-xl relative overflow-hidden group hover:border-emerald-500/50 transition-all">
+                
+                {/* NGO & Geotag Header */}
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <img 
+                      src="https://images.unsplash.com/photo-1541802645635-11f2286a7482?w=160&auto=format&fit=crop&q=80" 
+                      alt="Annapurna Seva Mission"
+                      className="w-10 h-10 rounded-2xl object-cover ring-2 ring-emerald-500/30"
+                    />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-sm text-white">Annapurna Seva Mission</span>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 inline" />
+                      </div>
+                      <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-rose-400 inline" />
+                        Dharavi Transit Camp • 19.0433° N, 72.8572° E
+                      </span>
+                    </div>
+                  </div>
 
-            {/* Core Interactive Action Badges */}
-            <div className="mt-6 flex flex-wrap gap-2.5">
-              <button
-                type="button"
-                onClick={() => setIsRegistrationChoiceOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md hover:scale-102 transition-all cursor-pointer bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black hover:shadow-lg"
-                title="Choose to register as NGO, Citizen KYC or browse as Guest"
-              >
-                <Sparkles className="w-4 h-4 text-slate-950" />
-                <span>1. Get Started / Choose Role</span>
-              </button>
+                  <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase">
+                    Dispatched
+                  </span>
+                </div>
 
-              <button
-                type="button"
-                onClick={() => setIsUserVerifyOpen(true)}
-                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-xs hover:scale-102 transition-all cursor-pointer border ${
-                  currentUser?.verified
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
-                    : 'bg-white text-slate-900 hover:bg-slate-100 border-transparent'
-                }`}
-              >
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                <span>{currentUser?.verified ? `KYC: ${currentUser.full_name}` : '2. Citizen KYC Pass'}</span>
-              </button>
+                {/* Ground Action Real Photograph */}
+                <div className="relative rounded-2xl overflow-hidden aspect-video border border-white/10 group-hover:shadow-lg transition-all">
+                  <img 
+                    src="https://images.unsplash.com/photo-1593113598332-cd288d649433?w=900&auto=format&fit=crop&q=80" 
+                    alt="Monsoon Flood Relief Ground Evidence"
+                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                  />
+                  
+                  {/* Photo Overlays: Geotag & Time */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/20" />
+                  
+                  <div className="absolute top-2.5 left-2.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-md text-[10px] font-mono text-emerald-300 border border-white/10 flex items-center gap-1.5">
+                    <Camera className="w-3 h-3" />
+                    <span>Raw Photographic Field Evidence</span>
+                  </div>
 
-              <button
-                type="button"
-                onClick={() => setIsRegisterNGOOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 hover:scale-102 text-white font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer border border-white/20"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>3. Register NGO (With Proofs)</span>
-              </button>
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-white block">Monsoon Relief: 3,200 Hot Meals</span>
+                      <span className="text-[10px] text-slate-300">Audited ₹45/Meal • 4 Commercial LPG stoves deployed</span>
+                    </div>
 
-              <button
-                type="button"
-                onClick={handleOpenGeneralImpactChain}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 hover:scale-102 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer"
-              >
-                <Layers className="w-4 h-4 text-slate-950" />
-                <span>4. Trace ₹75K Audit Chain</span>
-              </button>
+                    <button
+                      type="button"
+                      onClick={handleOpenGeneralImpactChain}
+                      className="px-2.5 py-1.5 rounded-xl bg-white/90 hover:bg-white text-slate-900 font-bold text-xs shadow-md transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <Layers className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Audit Trail</span>
+                    </button>
+                  </div>
+                </div>
 
-              <button
-                type="button"
-                onClick={() => setIsVoiceAssistantOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 hover:scale-102 text-white font-semibold text-xs sm:text-sm backdrop-blur-xs transition-all border border-white/20 cursor-pointer"
-              >
-                <Mic className="w-4 h-4 text-amber-300 animate-pulse" />
-                <span>वॉयस साथी (AI Assistant)</span>
-              </button>
+                {/* Micro Transparency Ledger Strip */}
+                <div className="mt-3.5 pt-3 border-t border-white/10 grid grid-cols-3 gap-2 text-center text-xs">
+                  <div className="p-2 bg-white/5 rounded-xl border border-white/5">
+                    <span className="text-[10px] text-slate-400 block">Beneficiaries</span>
+                    <span className="font-extrabold text-emerald-400 text-sm">3,200</span>
+                  </div>
+                  <div className="p-2 bg-white/5 rounded-xl border border-white/5">
+                    <span className="text-[10px] text-slate-400 block">Unit Cost</span>
+                    <span className="font-extrabold text-cyan-300 text-sm">₹45 / Meal</span>
+                  </div>
+                  <div className="p-2 bg-white/5 rounded-xl border border-white/5">
+                    <span className="text-[10px] text-slate-400 block">Ground Team</span>
+                    <span className="font-extrabold text-amber-300 text-sm">28 Volunteers</span>
+                  </div>
+                </div>
+
+                {/* Inspect Audit Button */}
+                <button
+                  type="button"
+                  onClick={handleOpenGeneralImpactChain}
+                  className="mt-3 w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-emerald-500/20 text-white hover:text-emerald-300 font-bold text-xs border border-white/10 hover:border-emerald-500/40 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <FileText className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Inspect Full ₹75,000 Itemized Invoices & GPS Stamps →</span>
+                </button>
+
+              </div>
+
             </div>
+
           </div>
 
-          {/* Quick Metrics Ticker - Interactive Clickable Cards */}
-          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          {/* Sleek Live Metrics Ticker Bar */}
+          <div className="mt-10 pt-6 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <button
               type="button"
               onClick={() => setActiveTab('ngos')}
-              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/40 rounded-2xl p-4 backdrop-blur-xs transition-all cursor-pointer group"
+              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/40 rounded-2xl p-3.5 backdrop-blur-xs transition-all cursor-pointer group"
             >
-              <span className="text-xs text-slate-400 font-medium block">Audited NGOs</span>
-              <span className="text-2xl sm:text-3xl font-black text-white mt-1 block group-hover:text-emerald-300 transition-colors">4</span>
-              <span className="text-[11px] text-emerald-400 mt-1 flex items-center justify-between">
-                <span className="flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Platform Reviewed
-                </span>
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity">Explore →</span>
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span className="font-medium">Audited NGOs</span>
+                <span className="text-[11px] text-emerald-400 group-hover:translate-x-0.5 transition-transform">Explore →</span>
+              </div>
+              <span className="text-2xl sm:text-3xl font-black text-white mt-0.5 block group-hover:text-emerald-300 transition-colors">4</span>
+              <span className="text-[11px] text-emerald-400 mt-0.5 flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 inline" /> 100% Platform Audited
               </span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab('fundraisers')}
-              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/40 rounded-2xl p-4 backdrop-blur-xs transition-all cursor-pointer group"
+              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/40 rounded-2xl p-3.5 backdrop-blur-xs transition-all cursor-pointer group"
             >
-              <span className="text-xs text-slate-400 font-medium block">Total Funds Raised</span>
-              <span className="text-2xl sm:text-3xl font-black text-emerald-400 mt-1 block">₹4.04L</span>
-              <span className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
-                <span>Across active drives</span>
-                <span className="opacity-0 group-hover:opacity-100 text-emerald-400 transition-opacity">Explore →</span>
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span className="font-medium">Total Funds Raised</span>
+                <span className="text-[11px] text-emerald-400 group-hover:translate-x-0.5 transition-transform">View →</span>
+              </div>
+              <span className="text-2xl sm:text-3xl font-black text-emerald-400 mt-0.5 block">₹4.04L</span>
+              <span className="text-[11px] text-slate-400 mt-0.5 block">
+                Direct to vendor invoices
               </span>
             </button>
 
             <button
               type="button"
               onClick={() => setIsAISummaryOpen(true)}
-              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/40 rounded-2xl p-4 backdrop-blur-xs transition-all cursor-pointer group"
+              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/40 rounded-2xl p-3.5 backdrop-blur-xs transition-all cursor-pointer group"
             >
-              <span className="text-xs text-slate-400 font-medium block">Reported Lives Reached</span>
-              <span className="text-2xl sm:text-3xl font-black text-cyan-400 mt-1 block">5,665+</span>
-              <span className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
-                <span>Meals, students & trees</span>
-                <span className="opacity-0 group-hover:opacity-100 text-cyan-400 transition-opacity">AI Summary →</span>
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span className="font-medium">Reported Lives Reached</span>
+                <span className="text-[11px] text-cyan-400 group-hover:translate-x-0.5 transition-transform">AI Audit →</span>
+              </div>
+              <span className="text-2xl sm:text-3xl font-black text-cyan-400 mt-0.5 block">5,665+</span>
+              <span className="text-[11px] text-slate-400 mt-0.5 block">
+                Meals, students & trees
               </span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab('volunteer')}
-              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/40 rounded-2xl p-4 backdrop-blur-xs transition-all cursor-pointer group"
+              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/40 rounded-2xl p-3.5 backdrop-blur-xs transition-all cursor-pointer group"
             >
-              <span className="text-xs text-slate-400 font-medium block">Volunteer Spots Filled</span>
-              <span className="text-2xl sm:text-3xl font-black text-amber-400 mt-1 block">57 / 78</span>
-              <span className="text-[11px] text-emerald-400 mt-1 flex items-center justify-between">
-                <span>Active ground drives</span>
-                <span className="opacity-0 group-hover:opacity-100 text-amber-300 transition-opacity">Join →</span>
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span className="font-medium">Volunteer Spots</span>
+                <span className="text-[11px] text-amber-300 group-hover:translate-x-0.5 transition-transform">Join →</span>
+              </div>
+              <span className="text-2xl sm:text-3xl font-black text-amber-400 mt-0.5 block">57 / 78</span>
+              <span className="text-[11px] text-emerald-400 mt-0.5 block">
+                Checked-in across drives
               </span>
             </button>
           </div>
@@ -403,6 +515,7 @@ export default function Home() {
       </section>
 
       {/* Main Content Area */}
+      <div id="ground-feed" />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
         
         {/* Instagram/Threads-style Impact Stories Bar */}
