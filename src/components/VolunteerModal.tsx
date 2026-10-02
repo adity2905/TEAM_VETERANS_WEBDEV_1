@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { VolunteerNeed } from '@/types';
 import { DataService } from '@/lib/dataService';
@@ -22,9 +22,22 @@ export default function VolunteerModal({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [idProof, setIdProof] = useState('AADHAAR-8901');
   const [skills, setSkills] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      const u = DataService.getCurrentUser();
+      if (u) {
+        if (!name) setName(u.full_name);
+        if (!email) setEmail(u.email);
+        if (u.phone) setPhone(u.phone);
+        if (u.id_number) setIdProof(`${u.id_type}-${u.id_number}`);
+      }
+    }
+  }, [isOpen]);
 
   if (!isOpen || !need) return null;
 
@@ -193,6 +206,20 @@ export default function VolunteerModal({
                       className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Govt ID Proof (Aadhaar / Voter ID / College ID) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter document reference number"
+                    value={idProof}
+                    onChange={(e) => setIdProof(e.target.value.toUpperCase())}
+                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
                 </div>
 
                 <div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Fundraiser, NGO } from '@/types';
 import { DataService } from '@/lib/dataService';
@@ -25,6 +25,8 @@ export default function DonationModal({
   const [customAmount, setCustomAmount] = useState<string>('');
   const [donorName, setDonorName] = useState<string>('');
   const [donorEmail, setDonorEmail] = useState<string>('');
+  const [donorPan, setDonorPan] = useState<string>('ABCDE1234F');
+  const [donorPhone, setDonorPhone] = useState<string>('9820112345');
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card'>('upi');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -34,6 +36,18 @@ export default function DonationModal({
     date: string;
     donorName: string;
   } | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      const u = DataService.getCurrentUser();
+      if (u) {
+        if (!donorName) setDonorName(u.full_name);
+        if (!donorEmail) setDonorEmail(u.email);
+        if (u.phone) setDonorPhone(u.phone);
+        if (u.id_type === 'PAN' && u.id_number) setDonorPan(u.id_number);
+      }
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -240,33 +254,74 @@ export default function DonationModal({
                 </div>
               </div>
 
-              {/* Donor Details */}
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Your Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required={!isAnonymous}
-                    placeholder="e.g. Rahul Sharma"
-                    value={donorName}
-                    onChange={(e) => setDonorName(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
+              {/* Mandatory Donor Verification Details */}
+              <div className="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Mandatory Donor KYC & 80G Details
+                  </span>
+                  <span className="text-[10px] text-emerald-700 bg-emerald-100 font-semibold px-2 py-0.5 rounded">
+                    Sec 80G Compliant
+                  </span>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Email for Tax 80G Receipt
+                    Your Full Legal Name <span className="text-rose-500">*</span>
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     required
-                    placeholder="rahul@example.com"
-                    value={donorEmail}
-                    onChange={(e) => setDonorEmail(e.target.value)}
-                    className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="e.g. Rahul Sharma"
+                    value={donorName}
+                    onChange={(e) => setDonorName(e.target.value)}
+                    className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Email for Tax 80G Receipt <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="rahul@example.com"
+                      value={donorEmail}
+                      onChange={(e) => setDonorEmail(e.target.value)}
+                      className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Donor PAN Number (For 80G) <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={10}
+                      placeholder="e.g. ABCDE1234F"
+                      value={donorPan}
+                      onChange={(e) => setDonorPan(e.target.value.toUpperCase())}
+                      className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-xl font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Contact Phone (10 digits) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    maxLength={10}
+                    placeholder="9876543210"
+                    value={donorPhone}
+                    onChange={(e) => setDonorPhone(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
@@ -279,7 +334,7 @@ export default function DonationModal({
                     className="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
                   />
                   <label htmlFor="anon" className="text-xs text-slate-600 select-none">
-                    Make my donation anonymous on public board
+                    Mask my name on public donor leaderboard (80G certificate still issued to you)
                   </label>
                 </div>
               </div>

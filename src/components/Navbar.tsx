@@ -9,6 +9,9 @@ interface NavbarProps {
   onTabChange?: (tab: string) => void;
   onOpenCreatePost?: () => void;
   onOpenAIMatcher?: () => void;
+  onOpenRegisterNGO?: () => void;
+  onOpenUserVerify?: () => void;
+  isUserVerified?: boolean;
 }
 
 export default function Navbar({
@@ -16,6 +19,9 @@ export default function Navbar({
   onTabChange,
   onOpenCreatePost,
   onOpenAIMatcher,
+  onOpenRegisterNGO,
+  onOpenUserVerify,
+  isUserVerified = false,
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -42,7 +48,7 @@ export default function Navbar({
                   Open<span className="text-emerald-600">Cause</span>
                 </span>
                 <span className="block text-[10px] uppercase font-semibold tracking-wider text-slate-500">
-                  Transparent NGO Network
+                  Audited Transparency Network
                 </span>
               </div>
             </Link>
@@ -57,7 +63,7 @@ export default function Navbar({
                 <button
                   key={item.id}
                   onClick={() => onTabChange?.(item.id)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs lg:text-sm font-medium transition-all ${
                     isActive
                       ? 'bg-emerald-50 text-emerald-700 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -71,44 +77,67 @@ export default function Navbar({
           </nav>
 
           {/* Right Action Buttons */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
+            {/* Citizen KYC Pass Badge/Button */}
+            <button
+              onClick={onOpenUserVerify}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                isUserVerified
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                  : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'
+              }`}
+              title="Citizen KYC Status"
+            >
+              <ShieldCheck className={`w-3.5 h-3.5 ${isUserVerified ? 'text-emerald-600' : 'text-slate-400'}`} />
+              <span className="hidden sm:inline">{isUserVerified ? 'KYC Verified' : 'Verify ID'}</span>
+            </button>
+
+            {/* Register New NGO Button */}
+            <button
+              onClick={onOpenRegisterNGO}
+              className="hidden lg:flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200"
+              title="First-time NGO registration with evidence"
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Register NGO</span>
+            </button>
+
             {/* Verify 80G Link */}
             <Link
               href="/verify"
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-emerald-700 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-emerald-700 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
               title="Verify 80G Receipt"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
               <span>Verify 80G</span>
             </Link>
 
             {/* NGO Portal Link */}
             <Link
               href="/dashboard"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200"
               title="NGO Partner Portal"
             >
               <Building2 className="w-3.5 h-3.5 text-slate-700" />
-              <span className="hidden sm:inline">NGO Portal</span>
+              <span className="hidden sm:inline">Portal</span>
             </Link>
 
             {/* AI Cause Matcher Button */}
             <button
               onClick={onOpenAIMatcher}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 rounded-lg transition-all shadow-xs hover:shadow-sm"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200/80 rounded-lg transition-all shadow-xs hover:shadow-sm"
               title="Find NGOs using AI"
             >
-              <Sparkles className="w-4 h-4 text-purple-600 animate-pulse" />
+              <Sparkles className="w-3.5 h-3.5 text-purple-600 animate-pulse" />
               <span className="hidden sm:inline">AI Matcher</span>
             </button>
 
             {/* Post Activity Button */}
             <button
               onClick={onOpenCreatePost}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm hover:shadow transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm hover:shadow transition-all"
             >
-              <PlusCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">Post Activity</span>
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Post Proof</span>
             </button>
           </div>
 

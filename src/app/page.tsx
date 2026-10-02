@@ -8,7 +8,9 @@ import VolunteerModal from '@/components/VolunteerModal';
 import CreatePostModal from '@/components/CreatePostModal';
 import AIMatcherModal from '@/components/AIMatcherModal';
 import NGOProfileModal from '@/components/NGOProfileModal';
-import { NGO, Post, Fundraiser, VolunteerNeed } from '@/types';
+import RegisterNGOModal from '@/components/RegisterNGOModal';
+import UserVerificationModal from '@/components/UserVerificationModal';
+import { NGO, Post, Fundraiser, VolunteerNeed, UserVerification } from '@/types';
 import { DataService } from '@/lib/dataService';
 import { 
   Heart, ShieldCheck, Users, Landmark, Search, Filter, 
@@ -41,6 +43,11 @@ export default function Home() {
   const [isNGOProfileOpen, setIsNGOProfileOpen] = useState(false);
   const [selectedNGO, setSelectedNGO] = useState<NGO | null>(null);
 
+  // Mentor Requested Modals State
+  const [isRegisterNGOOpen, setIsRegisterNGOOpen] = useState(false);
+  const [isUserVerifyOpen, setIsUserVerifyOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserVerification | null>(null);
+
   // Load initial data
   const loadAllData = async () => {
     try {
@@ -54,6 +61,9 @@ export default function Home() {
       setPosts(allPosts);
       setFundraisers(allFunds);
       setVolunteerNeeds(allNeeds);
+      
+      const user = DataService.getCurrentUser();
+      setCurrentUser(user);
     } catch (e) {
       console.error(e);
     } finally {
@@ -152,6 +162,9 @@ export default function Home() {
         onTabChange={(tab) => setActiveTab(tab as any)}
         onOpenCreatePost={() => setIsCreatePostOpen(true)}
         onOpenAIMatcher={() => setIsAIMatcherOpen(true)}
+        onOpenRegisterNGO={() => setIsRegisterNGOOpen(true)}
+        onOpenUserVerify={() => setIsUserVerifyOpen(true)}
+        isUserVerified={!!currentUser?.verified}
       />
 
       {/* Hero Banner with Live Metrics */}
@@ -218,6 +231,57 @@ export default function Home() {
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
         
+        {/* TEKTONIX MENTOR MANDATES SHOWCASE BANNER */}
+        <div className="mb-8 bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 rounded-2xl p-5 sm:p-6 border border-emerald-500/30 shadow-lg text-white">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+            <div className="space-y-1.5 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Tektonix 2026 Mentor Standards Implemented</span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white">
+                Mandatory Citizen KYC, 1st-Time NGO Proofs & ₹75,000 Forensic Audit
+              </h2>
+              <p className="text-xs text-slate-300 leading-relaxed font-light">
+                All 4 mentor mandates are actively enforced: <strong>1)</strong> Mandatory citizen KYC for donations & volunteering (non-empty ID, PAN, phone). <strong>2)</strong> Mandatory onboarding for first-time NGOs with 3 past event proofs, CA audit & 80G. <strong>3)</strong> Activity posts requiring beneficiary & volunteer rosters + geo-tags. <strong>4)</strong> Complete line-item expenditure audit of ₹75,000.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <button
+                onClick={() => setIsUserVerifyOpen(true)}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
+                  currentUser?.verified
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : 'bg-white text-slate-900 hover:bg-slate-100 border-transparent shadow-xs'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>{currentUser?.verified ? `KYC: ${currentUser.full_name}` : '1. Verify Citizen KYC'}</span>
+              </button>
+
+              <button
+                onClick={() => setIsRegisterNGOOpen(true)}
+                className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-sm cursor-pointer"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>2. Register NGO (With Proofs)</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab('feed');
+                  window.scrollTo({ top: 440, behavior: 'smooth' });
+                }}
+                className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <span>3. Inspect ₹75K Audit</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Search & Category Filter Bar */}
         <div className="mb-8 space-y-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -642,6 +706,24 @@ export default function Home() {
         posts={posts}
         onDonate={(f) => handleOpenDonateForFundraiser(f)}
         onVolunteer={(v) => handleOpenVolunteer(v)}
+      />
+
+      {/* Mentor Mandate: First-Time NGO Registration with Past Evidences Modal */}
+      <RegisterNGOModal
+        isOpen={isRegisterNGOOpen}
+        onClose={() => setIsRegisterNGOOpen(false)}
+        onSuccess={() => {
+          loadAllData();
+        }}
+      />
+
+      {/* Mentor Mandate: Citizen / Donor / Volunteer Mandatory KYC Modal */}
+      <UserVerificationModal
+        isOpen={isUserVerifyOpen}
+        onClose={() => setIsUserVerifyOpen(false)}
+        onVerificationComplete={(verifiedUser) => {
+          setCurrentUser(verifiedUser);
+        }}
       />
 
     </div>

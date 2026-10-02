@@ -1,5 +1,5 @@
-import { NGO, Post, Fundraiser, VolunteerNeed, Donation, VolunteerApplication } from '@/types';
-import { INITIAL_NGOS, INITIAL_POSTS, INITIAL_FUNDRAISERS, INITIAL_VOLUNTEER_NEEDS } from './mockData';
+import { NGO, Post, Fundraiser, VolunteerNeed, Donation, VolunteerApplication, NGORegistrationSubmission, UserVerification } from '@/types';
+import { INITIAL_NGOS, INITIAL_POSTS, INITIAL_FUNDRAISERS, INITIAL_VOLUNTEER_NEEDS, INITIAL_NGO_APPLICATIONS } from './mockData';
 import { supabase, isSupabaseConfigured } from './supabase';
 
 const STORAGE_KEYS = {
@@ -9,6 +9,8 @@ const STORAGE_KEYS = {
   VOLUNTEER_NEEDS: 'openseva_volunteer_needs',
   DONATIONS: 'openseva_donations',
   APPLICATIONS: 'openseva_applications',
+  NGO_REGISTRATIONS: 'openseva_ngo_registrations',
+  USER_VERIFICATION: 'openseva_user_verification',
 };
 
 // Helper for local storage retrieval
@@ -374,5 +376,68 @@ export const DataService = {
         console.warn('Supabase app status sync error', e);
       }
     }
+  },
+
+  // --- Mandatory User / Donor Verification ---
+  getCurrentUser(): UserVerification | null {
+    return getLocalItem<UserVerification | null>(STORAGE_KEYS.USER_VERIFICATION, null);
+  },
+
+  saveUserVerification(user: Omit<UserVerification, 'id' | 'registered_at' | 'verified'>): UserVerification {
+    const verifiedUser: UserVerification = {
+      ...user,
+      id: `usr-${Date.now()}`,
+      verified: true,
+      registered_at: new Date().toISOString(),
+    };
+    setLocalItem(STORAGE_KEYS.USER_VERIFICATION, verifiedUser);
+    return verifiedUser;
+  },
+
+  // --- Mandatory First-Time NGO Registration ---
+  getNGORegistrations(): NGORegistrationSubmission[] {
+    return getLocalItem<NGORegistrationSubmission[]>(STORAGE_KEYS.NGO_REGISTRATIONS, INITIAL_NGO_APPLICATIONS);
+  },
+
+  submitNGORegistration(app: Omit<NGORegistrationSubmission, 'id' | 'status' | 'submitted_at'>): NGORegistrationSubmission {
+    const newSubmission: NGORegistrationSubmission = {
+      ...app,
+      id: `ngo-reg-${Date.now()}`,
+      status: 'pending_audit',
+      submitted_at: new Date().toISOString(),
+    };
+    const current = getLocalItem<NGORegistrationSubmission[]>(STORAGE_KEYS.NGO_REGISTRATIONS, INITIAL_NGO_APPLICATIONS);
+    const updated = [newSubmission, ...current];
+    setLocalItem(STORAGE_KEYS.NGO_REGISTRATIONS, updated);
+    return newSubmission;
+  },
+
+  approveNGORegistration(submissionId: string): void {
+    const subs = getLocalItem<NGORegistrationSubmission[]>(STORAGE_KEYS.NGO_REGISTRATIONS, INITIAL_NGO_APPLICATIONS);
+    const target = subs.find((s) => s.id === submissionId);
+    if (!target) return;
+
+    target.status = 'verified';
+    setLocalItem(STORAGE_KEYS.NGO_REGISTRATIONS, subs);
+
+    // Also add to public NGOs list!
+    const newNgo: NGO = {
+      id: `ngo-${Date.now()}`,
+      name: target.name,
+      slug: target.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      tagline: `Audited ${target.category} NGO`,
+      description: `Verified NGO with audited annual budget of ₹${target.annual_budget.toLocaleString('en-IN')}. Registered under ${target.reg_number}.`,
+      category: target.category,
+      location: target.city,
+      logo_url: 'https://images.unsplash.com/photo-1541802645635-11f2286a7482?w=160&auto=format&fit=crop',
+      banner_url: target.past_event_proof_url,
+      verified: true,
+      transparency_score: 95,
+      founded_year: 2023,
+      reg_number: target.reg_number,
+      pan_number: target.pan_number,
+    };
+    const currentNgos = getLocalItem<NGO[]>(STORAGE_KEYS.NGOS, INITIAL_NGOS);
+    setLocalItem(STORAGE_KEYS.NGOS, [newNgo, ...currentNgos]);
   },
 };

@@ -2,23 +2,24 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { NGO, Fundraiser, VolunteerNeed, VolunteerApplication, Donation } from '@/types';
+import { NGO, Fundraiser, VolunteerNeed, VolunteerApplication, Donation, NGORegistrationSubmission } from '@/types';
 import { DataService } from '@/lib/dataService';
 import { 
   Building2, Users, Landmark, FileText, PlusCircle, CheckCircle2, 
   ArrowLeft, ShieldCheck, TrendingUp, Calendar, MapPin, Clock, 
-  ChevronRight, Award, ExternalLink
+  ChevronRight, Award, ExternalLink, AlertCircle, Check, XCircle
 } from 'lucide-react';
 
 export default function NGODashboard() {
   const [ngos, setNgos] = useState<NGO[]>([]);
   const [selectedNgoId, setSelectedNgoId] = useState<string>('ngo-1');
-  const [activeTab, setActiveTab] = useState<'volunteers' | 'fundraiser' | 'drive' | 'ledger'>('volunteers');
+  const [activeTab, setActiveTab] = useState<'volunteers' | 'fundraiser' | 'drive' | 'ledger' | 'approvals'>('volunteers');
 
   const [fundraisers, setFundraisers] = useState<Fundraiser[]>([]);
   const [volunteerNeeds, setVolunteerNeeds] = useState<VolunteerNeed[]>([]);
   const [applications, setApplications] = useState<VolunteerApplication[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [ngoApplications, setNgoApplications] = useState<NGORegistrationSubmission[]>([]);
 
   // New Fundraiser Form State
   const [fundTitle, setFundTitle] = useState('');
@@ -51,6 +52,7 @@ export default function NGODashboard() {
     setVolunteerNeeds(allNeeds);
     setApplications(allApps);
     setDonations(allDons);
+    setNgoApplications(DataService.getNGORegistrations());
   };
 
   useEffect(() => {
@@ -276,6 +278,18 @@ export default function NGODashboard() {
           >
             <FileText className="w-4 h-4" />
             <span>Donation & 80G Ledger</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('approvals')}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+              activeTab === 'approvals'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>1st-Time NGO Audits ({ngoApplications.length})</span>
           </button>
         </div>
 
@@ -595,6 +609,165 @@ export default function NGODashboard() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* TAB 5: 1ST-TIME NGO REGISTRATION AUDITS (Mentor Requirement Demo) */}
+        {activeTab === 'approvals' && (
+          <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-6 space-y-5">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-700/60">
+              <div>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  <h3 className="font-bold text-white text-base">First-Time NGO Registration & Evidence Audit Queue</h3>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Auditor portal reviewing mandatory 80G proofs, PAN verification, and 3 ground activity evidences
+                </p>
+              </div>
+              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                {ngoApplications.length} Submission{ngoApplications.length !== 1 ? 's' : ''} on Record
+              </span>
+            </div>
+
+            {ngoApplications.length === 0 ? (
+              <div className="text-center py-12 text-slate-400 text-sm">
+                No NGO registration applications submitted yet.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {ngoApplications.map((app) => (
+                  <div 
+                    key={app.id}
+                    className="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-5 space-y-4 shadow-sm"
+                  >
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          <h4 className="text-base font-bold text-white">{app.name}</h4>
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-cyan-300 border border-slate-700">
+                            {app.category}
+                          </span>
+                          <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${
+                            app.status === 'verified'
+                              ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                              : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                          }`}>
+                            {app.status === 'verified' ? '✓ Verified & Active' : '⏳ Pending Auditor Sign-Off'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-400 mt-1 flex-wrap">
+                          <span>📍 {app.city}</span>
+                          <span>•</span>
+                          <span>Reg No: <strong className="text-slate-200">{app.reg_number}</strong></span>
+                          <span>•</span>
+                          <span>PAN: <strong className="text-slate-200">{app.pan_number}</strong></span>
+                          <span>•</span>
+                          <span>Annual Budget: <strong className="text-emerald-400">₹{app.annual_budget.toLocaleString('en-IN')}</strong></span>
+                        </div>
+                      </div>
+
+                      {app.status !== 'verified' ? (
+                        <button
+                          onClick={() => {
+                            DataService.approveNGORegistration(app.id);
+                            loadData();
+                          }}
+                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-md transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+                        >
+                          <Check className="w-4 h-4" />
+                          <span>Approve & Certify 80G</span>
+                        </button>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-950/60 px-3 py-1.5 rounded-xl border border-emerald-800/80">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Certified on Network</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Key Contact & Officers */}
+                    <div className="bg-slate-800/50 p-3 rounded-xl border border-slate-700/60 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                      <div>
+                        <span className="text-slate-500 block text-[11px]">Head / Trustee</span>
+                        <strong className="text-slate-200">{app.head_officer_name}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block text-[11px]">Phone Contact</span>
+                        <strong className="text-slate-200">{app.head_officer_phone}</strong>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block text-[11px]">Email Address</span>
+                        <strong className="text-slate-200">{app.official_email}</strong>
+                      </div>
+                    </div>
+
+                    {/* MANDATORY EVIDENCES ATTACHED (Mentor's Exact Rule) */}
+                    <div>
+                      <span className="text-xs font-bold text-slate-300 block mb-2">
+                        Attached Mandatory Evidences & Compliance Proofs:
+                      </span>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        
+                        {/* Evidence 1: Audit Report */}
+                        <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex flex-col justify-between gap-2">
+                          <div>
+                            <span className="text-emerald-400 font-semibold block text-[11px]">1. 80G Audit / CA Report</span>
+                            <p className="text-slate-400 text-[11px] truncate mt-0.5">{app.audit_report_url}</p>
+                          </div>
+                          <a
+                            href={app.audit_report_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 hover:text-emerald-300"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>Inspect CA Certificate</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+
+                        {/* Evidence 2: Past Event Photo */}
+                        <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex flex-col justify-between gap-2">
+                          <div>
+                            <span className="text-cyan-400 font-semibold block text-[11px]">2. Ground Activity Photo</span>
+                            <p className="text-slate-400 text-[11px] truncate mt-0.5">{app.past_event_proof_url}</p>
+                          </div>
+                          <a
+                            href={app.past_event_proof_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-cyan-400 hover:text-cyan-300"
+                          >
+                            <span>Inspect High-Res Photo</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+
+                        {/* Evidence 3: Video Proof */}
+                        <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex flex-col justify-between gap-2">
+                          <div>
+                            <span className="text-purple-400 font-semibold block text-[11px]">3. Event Video Archive</span>
+                            <p className="text-slate-400 text-[11px] truncate mt-0.5">{app.video_proof_url}</p>
+                          </div>
+                          <a
+                            href={app.video_proof_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-400 hover:text-purple-300"
+                          >
+                            <span>Watch Drive Video</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+
+                      </div>
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
