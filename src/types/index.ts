@@ -19,6 +19,7 @@ export interface UserVerification {
   phone: string;
   email: string;
   city: string;
+  verified?: boolean;
   verified_at?: string;
 }
 
@@ -107,6 +108,30 @@ export interface StateImpactData {
   center: [number, number]; // [lat, lng] for map centering
 }
 
+export interface ExpenseAuditItem {
+  id: string;
+  item_description: string;
+  amount: number;
+  vendor_name: string;
+  invoice_number: string;
+  category: 'Equipment' | 'Logistics' | 'Learning Materials' | 'Medical Supplies' | 'Nutritional Packs' | 'Other' | string;
+}
+
+export interface BudgetReport {
+  total_budget_allocated: number;
+  total_spent: number;
+  auditor_seal?: string;
+  expenses: ExpenseAuditItem[];
+}
+
+export interface BeneficiaryRecord {
+  id: string;
+  beneficiary_name: string;
+  age_or_grade: string;
+  benefit_received: string;
+  verification_status: 'Audited & Verified' | 'Pending Verification' | string;
+}
+
 export interface Post {
   id: string;
   ngo_id: string;
@@ -114,12 +139,17 @@ export interface Post {
   title: string;
   content: string;
   media_url?: string;
+  video_url?: string;
+  gps_coordinates?: string;
   activity_type: 'past_impact' | 'upcoming_event' | 'story';
   event_date: string;
   location: string;
   people_reached: number;
   metrics_label: string;
   likes_count: number;
+  budget_report?: BudgetReport;
+  beneficiary_records?: BeneficiaryRecord[];
+  volunteers_attended?: string[];
   created_at: string;
 }
 

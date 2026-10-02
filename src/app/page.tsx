@@ -17,12 +17,15 @@ import SOSModal from '@/components/SOSModal';
 import VoiceAssistantModal from '@/components/VoiceAssistantModal';
 import ImpactMap from '@/components/ImpactMap';
 import AIImpactSummaryModal from '@/components/AIImpactSummaryModal';
-import { NGO, Post, Fundraiser, VolunteerNeed, Donation } from '@/types';
+import RegisterNGOModal from '@/components/RegisterNGOModal';
+import UserVerificationModal from '@/components/UserVerificationModal';
+import { NGO, Post, Fundraiser, VolunteerNeed, Donation, UserVerification } from '@/types';
 import { DataService } from '@/lib/dataService';
 import { 
   Heart, ShieldCheck, Users, Landmark, Search, Filter, 
   Sparkles, PlusCircle, ArrowRight, Award, TrendingUp, CheckCircle2,
-  Layers, Mic, AlertTriangle, HelpCircle, MapPin
+  Layers, Mic, AlertTriangle, HelpCircle, MapPin, Camera, Video, DollarSign, Navigation,
+  X, LayoutList, LayoutGrid, FileCheck
 } from 'lucide-react';
 
 const SAMPLE_PASSPORT_DONATIONS: Donation[] = [
@@ -52,6 +55,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'feed' | 'ngos' | 'fundraisers' | 'volunteer' | 'map'>('feed');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [feedViewMode, setFeedViewMode] = useState<'stream' | 'grid'>('stream');
 
   // Data states
   const [ngos, setNgos] = useState<NGO[]>([]);
@@ -89,6 +93,11 @@ export default function Home() {
   const [isVoiceAssistantOpen, setIsVoiceAssistantOpen] = useState(false);
   const [isAISummaryOpen, setIsAISummaryOpen] = useState(false);
 
+  // Mentor Requested Modals State
+  const [isRegisterNGOOpen, setIsRegisterNGOOpen] = useState(false);
+  const [isUserVerifyOpen, setIsUserVerifyOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserVerification | null>(null);
+
   // Load initial data
   const loadAllData = async () => {
     try {
@@ -102,6 +111,9 @@ export default function Home() {
       setPosts(allPosts);
       setFundraisers(allFunds);
       setVolunteerNeeds(allNeeds);
+
+      const user = DataService.getUserVerification();
+      if (user) setCurrentUser(user);
     } catch (e) {
       console.error(e);
     } finally {
@@ -113,8 +125,14 @@ export default function Home() {
     loadAllData();
   }, []);
 
-  // Filter Categories
-  const categories = ['All', 'Hunger Relief', 'Education', 'Environment', 'Animal Welfare'];
+  // Filter Categories with Counts
+  const categoriesWithCounts = [
+    { id: 'All', label: 'All Causes', count: posts.length },
+    { id: 'Hunger Relief', label: 'Hunger Relief', count: posts.filter((p) => p.ngo?.category === 'Hunger Relief').length },
+    { id: 'Education', label: 'Education', count: posts.filter((p) => p.ngo?.category === 'Education').length },
+    { id: 'Environment', label: 'Environment', count: posts.filter((p) => p.ngo?.category === 'Environment').length },
+    { id: 'Animal Welfare', label: 'Animal Welfare', count: posts.filter((p) => p.ngo?.category === 'Animal Welfare').length },
+  ];
 
   // Filtered lists
   const filteredPosts = posts.filter((p) => {
@@ -224,16 +242,23 @@ export default function Home() {
         onOpenVoiceAssistant={() => setIsVoiceAssistantOpen(true)}
         onOpenSOS={() => setIsSOSOpen(true)}
         onOpenAISummary={() => setIsAISummaryOpen(true)}
+        onOpenRegisterNGO={() => setIsRegisterNGOOpen(true)}
+        onOpenUserVerify={() => setIsUserVerifyOpen(true)}
+        isUserVerified={!!currentUser?.verified}
+        currentUserName={currentUser?.full_name}
       />
 
       {/* Hero Banner with Live Metrics & Impact Chain CTA */}
-      <section className="bg-gradient-to-b from-emerald-950 via-slate-900 to-slate-900 text-white pt-10 pb-12 px-4 sm:px-6 lg:px-8 border-b border-emerald-900/30">
-        <div className="max-w-7xl mx-auto">
-          
+      <section className="relative bg-slate-950 text-white pt-10 pb-12 px-4 sm:px-6 lg:px-8 border-b border-emerald-900/30 overflow-hidden">
+        {/* Subtle Ambient Glows */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold mb-4 backdrop-blur-md">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>100% Traceable Impact • Zero Black-Box Donations</span>
+              <span>100% Traceable Impact • Zero Black-Box Giving</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight sm:leading-tight">
@@ -248,70 +273,105 @@ export default function Home() {
               Explore verified NGO activities, track live photographic proof of drives, review transparency scores, and trace every single rupee from invoice to field deployment.
             </p>
 
-            {/* Core USP Action Buttons */}
-            <div className="mt-6 flex flex-wrap gap-3">
+            {/* Core Interactive Action Badges */}
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              <button
+                type="button"
+                onClick={() => setIsUserVerifyOpen(true)}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-xs hover:scale-102 transition-all cursor-pointer border ${
+                  currentUser?.verified
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
+                    : 'bg-white text-slate-900 hover:bg-slate-100 border-transparent'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                <span>{currentUser?.verified ? `KYC: ${currentUser.full_name}` : '1. Mandatory Citizen KYC'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsRegisterNGOOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 hover:scale-102 text-white font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>2. Register NGO (With Proofs)</span>
+              </button>
+
               <button
                 type="button"
                 onClick={handleOpenGeneralImpactChain}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-md transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 hover:scale-102 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all cursor-pointer"
               >
                 <Layers className="w-4 h-4 text-slate-950" />
-                <span>Explore The Impact Chain USP</span>
+                <span>3. Trace ₹75K Audit Chain</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setIsVoiceAssistantOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm backdrop-blur-xs transition-all border border-white/20 cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 hover:scale-102 text-white font-semibold text-xs sm:text-sm backdrop-blur-xs transition-all border border-white/20 cursor-pointer"
               >
                 <Mic className="w-4 h-4 text-amber-300 animate-pulse" />
-                <span>वॉयस साथी (Hindi / Marathi)</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsDonorDashboardOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm backdrop-blur-xs transition-all border border-white/20 cursor-pointer"
-              >
-                <Award className="w-4 h-4 text-cyan-300" />
-                <span>My Impact Passport</span>
+                <span>वॉयस साथी (AI Assistant)</span>
               </button>
             </div>
           </div>
 
-          {/* Quick Metrics Ticker */}
+          {/* Quick Metrics Ticker - Interactive Clickable Cards */}
           <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xs">
+            <button
+              type="button"
+              onClick={() => setActiveTab('ngos')}
+              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/40 rounded-2xl p-4 backdrop-blur-xs transition-all cursor-pointer group"
+            >
               <span className="text-xs text-slate-400 font-medium block">Audited NGOs</span>
-              <span className="text-2xl sm:text-3xl font-black text-white mt-1 block">4</span>
-              <span className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> Platform Reviewed
+              <span className="text-2xl sm:text-3xl font-black text-white mt-1 block group-hover:text-emerald-300 transition-colors">4</span>
+              <span className="text-[11px] text-emerald-400 mt-1 flex items-center justify-between">
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Platform Reviewed
+                </span>
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity">Explore →</span>
               </span>
-            </div>
+            </button>
 
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xs">
+            <button
+              type="button"
+              onClick={() => setActiveTab('fundraisers')}
+              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/40 rounded-2xl p-4 backdrop-blur-xs transition-all cursor-pointer group"
+            >
               <span className="text-xs text-slate-400 font-medium block">Total Funds Raised</span>
               <span className="text-2xl sm:text-3xl font-black text-emerald-400 mt-1 block">₹4.04L</span>
-              <span className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
-                Across active drives
+              <span className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+                <span>Across active drives</span>
+                <span className="opacity-0 group-hover:opacity-100 text-emerald-400 transition-opacity">Explore →</span>
               </span>
-            </div>
+            </button>
 
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xs">
+            <button
+              type="button"
+              onClick={() => setIsAISummaryOpen(true)}
+              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/40 rounded-2xl p-4 backdrop-blur-xs transition-all cursor-pointer group"
+            >
               <span className="text-xs text-slate-400 font-medium block">Reported Lives Reached</span>
               <span className="text-2xl sm:text-3xl font-black text-cyan-400 mt-1 block">5,665+</span>
-              <span className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
-                Meals, students & trees
+              <span className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+                <span>Meals, students & trees</span>
+                <span className="opacity-0 group-hover:opacity-100 text-cyan-400 transition-opacity">AI Summary →</span>
               </span>
-            </div>
+            </button>
 
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xs">
+            <button
+              type="button"
+              onClick={() => setActiveTab('volunteer')}
+              className="text-left bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/40 rounded-2xl p-4 backdrop-blur-xs transition-all cursor-pointer group"
+            >
               <span className="text-xs text-slate-400 font-medium block">Volunteer Spots Filled</span>
               <span className="text-2xl sm:text-3xl font-black text-amber-400 mt-1 block">57 / 78</span>
-              <span className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
-                Active ground drives
+              <span className="text-[11px] text-emerald-400 mt-1 flex items-center justify-between">
+                <span>Active ground drives</span>
+                <span className="opacity-0 group-hover:opacity-100 text-amber-300 transition-opacity">Join →</span>
               </span>
-            </div>
+            </button>
           </div>
 
         </div>
@@ -327,7 +387,7 @@ export default function Home() {
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             
-            {/* Search Input */}
+            {/* Search Input with Clear Button */}
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
@@ -335,16 +395,51 @@ export default function Home() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search causes, NGOs, cities (e.g. Mumbai, coding, food)..."
-                className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs"
+                className="w-full pl-10 pr-9 py-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs transition-all"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-100 transition-colors"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
 
-            {/* Top Action Pills: AI Matcher & Regional Map */}
+            {/* Action Cluster: View Switcher, AI Matcher & Regional Map */}
             <div className="flex items-center gap-2">
+              
+              {/* Stream / Grid view toggle */}
+              <div className="hidden sm:flex items-center bg-white p-1 rounded-2xl border border-slate-200 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setFeedViewMode('stream')}
+                  className={`p-1.5 rounded-xl transition-all cursor-pointer ${
+                    feedViewMode === 'stream' ? 'bg-emerald-50 text-emerald-700 shadow-2xs font-bold' : 'text-slate-400 hover:text-slate-700'
+                  }`}
+                  title="Single Column Stream"
+                >
+                  <LayoutList className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFeedViewMode('grid')}
+                  className={`p-1.5 rounded-xl transition-all cursor-pointer ${
+                    feedViewMode === 'grid' ? 'bg-emerald-50 text-emerald-700 shadow-2xs font-bold' : 'text-slate-400 hover:text-slate-700'
+                  }`}
+                  title="Two Column Grid"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+              </div>
+
               <button
                 type="button"
                 onClick={() => setActiveTab(activeTab === 'map' ? 'feed' : 'map')}
-                className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs sm:text-sm font-bold rounded-2xl border transition-all cursor-pointer ${
+                className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs sm:text-sm font-bold rounded-2xl border transition-all cursor-pointer shadow-2xs ${
                   activeTab === 'map'
                     ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                     : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
@@ -357,7 +452,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setIsAIMatcherOpen(true)}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs sm:text-sm font-bold rounded-2xl shadow-sm hover:shadow transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs sm:text-sm font-bold rounded-2xl shadow-xs hover:shadow-md transition-all cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 animate-spin" />
                 <span>Smart AI Cause Finder</span>
@@ -365,20 +460,25 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Category Pills */}
+          {/* Category Pills with Counts */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            {categories.map((cat) => (
+            {categoriesWithCounts.map((cat) => (
               <button
-                key={cat}
+                key={cat.id}
                 type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === cat
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                  selectedCategory === cat.id
                     ? 'bg-emerald-600 text-white shadow-xs'
                     : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                {cat}
+                <span>{cat.label}</span>
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                  selectedCategory === cat.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {cat.count}
+                </span>
               </button>
             ))}
           </div>
@@ -412,21 +512,85 @@ export default function Home() {
                 </span>
               </div>
 
+              {/* Social Activity Composer Bar (Interactive Creator) */}
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-4 sm:p-5 shadow-xs hover:border-emerald-300 hover:shadow-md transition-all">
+                <div className="flex items-center gap-3.5">
+                  <div className="relative shrink-0">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 flex items-center justify-center text-white font-black text-sm shadow-xs">
+                      {currentUser?.full_name ? currentUser.full_name[0].toUpperCase() : 'T'}
+                    </div>
+                    {currentUser?.verified && (
+                      <span className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-2xs">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 fill-emerald-100" />
+                      </span>
+                    )}
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatePostOpen(true)}
+                    className="flex-1 text-left px-4 py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 text-xs sm:text-sm text-slate-500 font-medium transition-colors cursor-pointer border border-slate-200/70 shadow-2xs hover:border-emerald-200 flex items-center justify-between"
+                  >
+                    <span>Share verified on-ground proof, photos, video, or budget report...</span>
+                    <span className="hidden sm:inline text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-lg">
+                      + Post Proof
+                    </span>
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-100 text-xs text-slate-600 font-semibold flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatePostOpen(true)}
+                    className="flex items-center gap-1.5 text-emerald-800 bg-emerald-50/80 hover:bg-emerald-100 px-3 py-1.5 rounded-xl border border-emerald-200/60 transition-all cursor-pointer shadow-2xs"
+                  >
+                    <Camera className="w-4 h-4 text-emerald-600" />
+                    <span>Photo Proof</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatePostOpen(true)}
+                    className="flex items-center gap-1.5 text-cyan-800 bg-cyan-50/80 hover:bg-cyan-100 px-3 py-1.5 rounded-xl border border-cyan-200/60 transition-all cursor-pointer shadow-2xs"
+                  >
+                    <Video className="w-4 h-4 text-cyan-600" />
+                    <span>Video Doc</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatePostOpen(true)}
+                    className="flex items-center gap-1.5 text-amber-800 bg-amber-50/80 hover:bg-amber-100 px-3 py-1.5 rounded-xl border border-amber-200/60 transition-all cursor-pointer shadow-2xs"
+                  >
+                    <DollarSign className="w-4 h-4 text-amber-600" />
+                    <span>₹75K Ledger</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatePostOpen(true)}
+                    className="flex items-center gap-1.5 text-purple-800 bg-purple-50/80 hover:bg-purple-100 px-3 py-1.5 rounded-xl border border-purple-200/60 transition-all cursor-pointer shadow-2xs"
+                  >
+                    <Navigation className="w-4 h-4 text-purple-600" />
+                    <span>GPS Geo-tag</span>
+                  </button>
+                </div>
+              </div>
+
               {filteredPosts.length === 0 ? (
                 <div className="bg-white rounded-3xl p-10 text-center border border-slate-200">
                   <p className="text-slate-500 text-sm">No activity posts match your search.</p>
                 </div>
               ) : (
-                filteredPosts.map((post) => (
-                  <FeedCard
-                    key={post.id}
-                    post={post}
-                    onLike={(id) => DataService.likePost(id)}
-                    onDonate={(ngoId) => handleOpenDonateForNGO(ngoId)}
-                    onSelectNGO={(slug) => handleOpenNGOProfile(slug)}
-                    onViewImpactChain={(p) => handleOpenImpactChainForPost(p)}
-                  />
-                ))
+                <div className={feedViewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'space-y-6'}>
+                  {filteredPosts.map((post) => (
+                    <FeedCard
+                      key={post.id}
+                      post={post}
+                      onLike={(id) => DataService.likePost(id)}
+                      onDonate={(ngoId) => handleOpenDonateForNGO(ngoId)}
+                      onSelectNGO={(slug) => handleOpenNGOProfile(slug)}
+                      onViewImpactChain={(p) => handleOpenImpactChainForPost(p)}
+                    />
+                  ))}
+                </div>
               )}
             </div>
 
@@ -434,27 +598,87 @@ export default function Home() {
             <div className="hidden lg:block lg:col-span-4 space-y-6">
               
               {/* Impact Chain Quick Banner */}
-              <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-3xl p-5 shadow-sm space-y-3">
-                <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
-                  <Layers className="w-5 h-5 text-white" />
+              <div className="bg-gradient-to-br from-amber-500 via-amber-600 to-orange-600 text-white rounded-3xl p-5 shadow-sm space-y-3.5 hover:shadow-md transition-all">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center shadow-2xs">
+                    <Layers className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+                    Audited Rupee Flow
+                  </span>
                 </div>
+                
                 <div>
-                  <h4 className="font-extrabold text-base">The Impact Chain</h4>
+                  <h4 className="font-black text-base">The Impact Chain</h4>
                   <p className="text-xs text-amber-100 mt-1 leading-relaxed">
-                    Trace how ₹500 travels: from donation receipt to itemized purchase invoices, GPS coordinates, and ground beneficiary headcounts.
+                    Trace how every rupee moves from your receipt to real ground delivery:
                   </p>
                 </div>
+
+                {/* 3-Step Flow Preview */}
+                <div className="bg-black/15 p-3 rounded-2xl space-y-1.5 border border-white/10 text-xs">
+                  <div className="flex items-center gap-2 text-amber-100">
+                    <span className="w-5 h-5 rounded-full bg-emerald-400 text-slate-950 font-bold flex items-center justify-center text-[10px]">1</span>
+                    <span>₹500 Donated (Instant 80G Receipt)</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-amber-100">
+                    <span className="w-5 h-5 rounded-full bg-cyan-300 text-slate-950 font-bold flex items-center justify-center text-[10px]">2</span>
+                    <span>Matched to Vendor Invoice (₹75K Ledger)</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-amber-100">
+                    <span className="w-5 h-5 rounded-full bg-amber-300 text-slate-950 font-bold flex items-center justify-center text-[10px]">3</span>
+                    <span>GPS & Student Headcount Verified</span>
+                  </div>
+                </div>
+
                 <button
                   type="button"
                   onClick={handleOpenGeneralImpactChain}
-                  className="w-full py-2 px-3 bg-white text-orange-950 font-bold rounded-xl text-xs hover:bg-orange-50 transition-colors shadow-2xs"
+                  className="w-full py-2.5 px-3 bg-white hover:bg-orange-50 text-orange-950 font-black rounded-xl text-xs transition-colors shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  Inspect Interactive Audit Trail →
+                  <span>Launch Visual Audit Trail</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
 
+              {/* Citizen KYC Pass Card */}
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs hover:border-emerald-300 transition-all">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <h3 className="font-bold text-slate-900 text-sm">Citizen KYC Status</h3>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                    currentUser?.verified
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : 'bg-amber-50 text-amber-800 border-amber-200'
+                  }`}>
+                    {currentUser?.verified ? 'Verified Citizen' : 'KYC Pending'}
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  {currentUser?.verified 
+                    ? `Registered with Govt ID (${currentUser.id_type || 'Aadhaar'}). Verified on-ground for voting, reviews, and donations.` 
+                    : 'Mandatory verification required for tax exemptions and transparency audits.'}
+                </p>
+
+                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800">
+                    {currentUser?.full_name || 'Aditya Verma'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsUserVerifyOpen(true)}
+                    className="text-xs font-bold text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer"
+                  >
+                    {currentUser?.verified ? 'View Pass →' : 'Complete KYC →'}
+                  </button>
+                </div>
+              </div>
+
               {/* Urgent Fundraisers Widget */}
-              <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                     <Landmark className="w-4 h-4 text-emerald-600" />
@@ -463,7 +687,7 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setActiveTab('fundraisers')}
-                    className="text-xs font-semibold text-emerald-600 hover:underline"
+                    className="text-xs font-semibold text-emerald-600 hover:underline cursor-pointer"
                   >
                     View All
                   </button>
@@ -478,7 +702,7 @@ export default function Home() {
                         <span className="text-[11px] text-slate-500 block mt-0.5">{f.ngo?.name}</span>
                         
                         <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden my-2">
-                          <div style={{ width: `${percent}%` }} className="bg-emerald-500 h-full rounded-full" />
+                          <div style={{ width: `${percent}%` }} className="bg-emerald-500 h-full rounded-full transition-all duration-500" />
                         </div>
 
                         <div className="flex items-center justify-between text-[11px] text-slate-600">
@@ -486,7 +710,7 @@ export default function Home() {
                           <button
                             type="button"
                             onClick={() => handleOpenDonateForFundraiser(f)}
-                            className="font-bold text-emerald-600 hover:text-emerald-700"
+                            className="font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer"
                           >
                             Support →
                           </button>
@@ -498,7 +722,7 @@ export default function Home() {
               </div>
 
               {/* Open Volunteer Drives Widget */}
-              <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+              <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-xs">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                     <Users className="w-4 h-4 text-blue-600" />
@@ -507,7 +731,7 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setActiveTab('volunteer')}
-                    className="text-xs font-semibold text-blue-600 hover:underline"
+                    className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
                   >
                     View All
                   </button>
@@ -515,7 +739,7 @@ export default function Home() {
 
                 <div className="space-y-3">
                   {volunteerNeeds.slice(0, 2).map((v) => (
-                    <div key={v.id} className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+                    <div key={v.id} className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 hover:border-blue-300 transition-all">
                       <h4 className="text-xs font-bold text-slate-900 line-clamp-1">{v.title}</h4>
                       <p className="text-[11px] text-slate-500 mt-0.5">{v.event_date}</p>
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200/60 text-[11px]">
@@ -523,7 +747,7 @@ export default function Home() {
                         <button
                           type="button"
                           onClick={() => handleOpenVolunteer(v)}
-                          className="font-bold text-blue-600 hover:text-blue-700"
+                          className="font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
                         >
                           Join →
                         </button>
@@ -547,14 +771,14 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setIsNeedHelpOpen(true)}
-                    className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors"
+                    className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors cursor-pointer"
                   >
                     I Need Help
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsSOSOpen(true)}
-                    className="px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors"
+                    className="px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors cursor-pointer"
                   >
                     SOS Triage
                   </button>
@@ -562,9 +786,9 @@ export default function Home() {
               </div>
 
               {/* Transparency Audited Guarantee Card */}
-              <div className="bg-gradient-to-br from-emerald-500 to-teal-700 text-white rounded-2xl p-5 shadow-sm">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">
-                  <ShieldCheck className="w-6 h-6" />
+              <div className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-3xl p-5 shadow-sm">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center mb-3">
+                  <ShieldCheck className="w-6 h-6 text-white" />
                 </div>
                 <h4 className="font-bold text-base">Transparency Audited Guarantee</h4>
                 <p className="text-xs text-emerald-100 mt-1 leading-relaxed">
@@ -921,6 +1145,24 @@ export default function Home() {
       <AIImpactSummaryModal
         isOpen={isAISummaryOpen}
         onClose={() => setIsAISummaryOpen(false)}
+      />
+
+      {/* Mentor Mandate: First-Time NGO Registration with Past Evidences Modal */}
+      <RegisterNGOModal
+        isOpen={isRegisterNGOOpen}
+        onClose={() => setIsRegisterNGOOpen(false)}
+        onSuccess={() => {
+          loadAllData();
+        }}
+      />
+
+      {/* Mentor Mandate: Citizen / Donor / Volunteer Mandatory KYC Modal */}
+      <UserVerificationModal
+        isOpen={isUserVerifyOpen}
+        onClose={() => setIsUserVerifyOpen(false)}
+        onVerificationComplete={(verifiedUser) => {
+          setCurrentUser(verifiedUser);
+        }}
       />
 
     </div>

@@ -545,6 +545,7 @@ export const DataService = {
       phone: user.phone,
       email: user.email,
       city: user.city,
+      verified: true,
       verified_at: new Date().toISOString(),
     };
     setLocalItem('openseva_user_verification', verifiedUser);
@@ -552,7 +553,17 @@ export const DataService = {
   },
 
   getUserVerification(): UserVerification | null {
-    return getLocalItem<UserVerification | null>('openseva_user_verification', null);
+    return getLocalItem<UserVerification | null>('openseva_user_verification', {
+      id: 'usr_verified_demo',
+      full_name: 'Aditya Verma (Verified Citizen)',
+      id_type: 'Aadhaar',
+      id_number: 'XXXX-XXXX-8921',
+      phone: '+91 98200 11223',
+      email: 'aditya@tektonix.internal',
+      city: 'Pune',
+      verified: true,
+      verified_at: '2026-09-20T10:00:00Z',
+    });
   },
 };
 
