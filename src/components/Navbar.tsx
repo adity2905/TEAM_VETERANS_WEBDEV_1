@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Heart, Search, PlusCircle, Sparkles, ShieldCheck, Users, Landmark } from 'lucide-react';
+import { Heart, Search, PlusCircle, Sparkles, ShieldCheck, Users, Landmark, Building2 } from 'lucide-react';
 
 interface NavbarProps {
   activeTab?: string;
@@ -72,6 +72,26 @@ export default function Navbar({
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2.5">
+            {/* Verify 80G Link */}
+            <Link
+              href="/verify"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-emerald-700 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+              title="Verify 80G Receipt"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Verify 80G</span>
+            </Link>
+
+            {/* NGO Portal Link */}
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200"
+              title="NGO Partner Portal"
+            >
+              <Building2 className="w-3.5 h-3.5 text-slate-700" />
+              <span className="hidden sm:inline">NGO Portal</span>
+            </Link>
+
             {/* AI Cause Matcher Button */}
             <button
               onClick={onOpenAIMatcher}

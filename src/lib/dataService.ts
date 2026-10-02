@@ -243,4 +243,136 @@ export const DataService = {
 
     return newApp;
   },
+
+  async createFundraiser(fundraiser: Omit<Fundraiser, 'id' | 'raised_amount'>): Promise<Fundraiser> {
+    const newFund: Fundraiser = {
+      ...fundraiser,
+      id: `fund-${Date.now()}`,
+      raised_amount: 0,
+      created_at: new Date().toISOString(),
+    };
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('fundraisers').insert([newFund]).select().single();
+        if (!error && data) return data as Fundraiser;
+      } catch (e) {
+        console.error('Supabase fundraiser insert failed', e);
+      }
+    }
+
+    const current = getLocalItem<Fundraiser[]>(STORAGE_KEYS.FUNDRAISERS, INITIAL_FUNDRAISERS);
+    const updated = [newFund, ...current];
+    setLocalItem(STORAGE_KEYS.FUNDRAISERS, updated);
+    return newFund;
+  },
+
+  async createVolunteerNeed(need: Omit<VolunteerNeed, 'id' | 'filled_slots'>): Promise<VolunteerNeed> {
+    const newNeed: VolunteerNeed = {
+      ...need,
+      id: `vol-${Date.now()}`,
+      filled_slots: 0,
+      status: 'open',
+      created_at: new Date().toISOString(),
+    };
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('volunteer_needs').insert([newNeed]).select().single();
+        if (!error && data) return data as VolunteerNeed;
+      } catch (e) {
+        console.error('Supabase volunteer_need insert failed', e);
+      }
+    }
+
+    const current = getLocalItem<VolunteerNeed[]>(STORAGE_KEYS.VOLUNTEER_NEEDS, INITIAL_VOLUNTEER_NEEDS);
+    const updated = [newNeed, ...current];
+    setLocalItem(STORAGE_KEYS.VOLUNTEER_NEEDS, updated);
+    return newNeed;
+  },
+
+  async getDonations(): Promise<Donation[]> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('donations').select('*').order('created_at', { ascending: false });
+        if (!error && data && data.length > 0) return data as Donation[];
+      } catch (e) {
+        console.warn('Donations fallback', e);
+      }
+    }
+    return getLocalItem<Donation[]>(STORAGE_KEYS.DONATIONS, [
+      {
+        id: 'don-demo-1',
+        fundraiser_id: 'fund-1',
+        donor_name: 'Ananya Deshmukh',
+        donor_email: 'ananya@gmail.com',
+        amount: 2500,
+        is_anonymous: false,
+        receipt_id: 'TXN-80G-DEMO-9901',
+        created_at: '2026-10-01T14:30:00Z',
+      },
+      {
+        id: 'don-demo-2',
+        fundraiser_id: 'fund-2',
+        donor_name: 'Anonymous Donor',
+        donor_email: 'donor@gmail.com',
+        amount: 7000,
+        is_anonymous: true,
+        receipt_id: 'TXN-80G-DEMO-8802',
+        created_at: '2026-10-01T16:45:00Z',
+      },
+    ]);
+  },
+
+  async getDonationByReceiptId(receiptId: string): Promise<Donation | undefined> {
+    const donations = await this.getDonations();
+    return donations.find((d) => d.receipt_id.toLowerCase().trim() === receiptId.toLowerCase().trim());
+  },
+
+  async getVolunteerApplications(): Promise<VolunteerApplication[]> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('volunteer_applications').select('*').order('created_at', { ascending: false });
+        if (!error && data && data.length > 0) return data as VolunteerApplication[];
+      } catch (e) {
+        console.warn('Volunteer apps fallback', e);
+      }
+    }
+    return getLocalItem<VolunteerApplication[]>(STORAGE_KEYS.APPLICATIONS, [
+      {
+        id: 'app-demo-1',
+        volunteer_need_id: 'vol-1',
+        applicant_name: 'Aditya Verma',
+        applicant_email: 'aditya.v@outlook.com',
+        applicant_phone: '+91 98201 12345',
+        skills: 'Inventory management & food logistics experience',
+        status: 'approved',
+        created_at: '2026-10-01T12:00:00Z',
+      },
+      {
+        id: 'app-demo-2',
+        volunteer_need_id: 'vol-2',
+        applicant_name: 'Meera Nambiar',
+        applicant_email: 'meera.n@gmail.com',
+        applicant_phone: '+91 97402 54321',
+        skills: 'Frontend web development (React, JS), English tutor',
+        status: 'pending',
+        created_at: '2026-10-01T17:10:00Z',
+      },
+    ]);
+  },
+
+  async updateApplicationStatus(appId: string, status: 'approved' | 'pending'): Promise<void> {
+    const apps = getLocalItem<VolunteerApplication[]>(STORAGE_KEYS.APPLICATIONS, []);
+    const updated = apps.map((a) => (a.id === appId ? { ...a, status } : a));
+    setLocalItem(STORAGE_KEYS.APPLICATIONS, updated);
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from('volunteer_applications').update({ status }).eq('id', appId);
+      } catch (e) {
+        console.warn('Supabase app status sync error', e);
+      }
+    }
+  },
 };
